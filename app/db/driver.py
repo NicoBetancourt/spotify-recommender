@@ -3,7 +3,6 @@ from db.client import get_connection
 from decouple import config
 
 table_name = config('PGSQL_DATABASE')
-# _logger = init_logger(__name__)
 
 class psql_driver():
     @classmethod
