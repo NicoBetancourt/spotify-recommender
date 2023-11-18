@@ -1,6 +1,10 @@
-# from repositories.song_repository import SongRepository
+from repositories.song_repository import SongRepository
 
+class GetAllSongs:
 
-def get_all_songs(song_repository):
-    songs = song_repository.get_all_songs()
-    return songs
+    def __init__(self, song_repository: SongRepository):
+        self._song_repository: SongRepository = song_repository
+
+    def execute(self):
+        songs = self._song_repository.get_all_songs()
+        return songs

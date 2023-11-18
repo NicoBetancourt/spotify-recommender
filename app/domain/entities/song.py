@@ -84,3 +84,9 @@ class Song():
             'tempo': self.tempo,
             'duration_ms': self.duration_ms,
         }
+    
+    def headers(self):
+        return [
+            key.lower() for key in self.__dict__.keys()
+            if not key.startswith("_")
+        ]
