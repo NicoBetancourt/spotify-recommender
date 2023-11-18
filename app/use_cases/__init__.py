@@ -6,7 +6,7 @@ from use_cases.update_song import UpdateSong
 from use_cases.delete_song import DeleteSong
 
 # Repos
-from repositories.song_repository import SongRepository
+from domain.repositories.song_repository import SongRepository
 
 _info_repo = SongRepository()
 

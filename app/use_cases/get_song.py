@@ -1,4 +1,4 @@
-from repositories.song_repository import SongRepository
+from domain.repositories.song_repository import SongRepository
 
 
 class GetSong:

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controller.song_controller import SongController
+from controller.song_controller import SongController
 
 song_routes = Blueprint("song_routes", __name__)
 

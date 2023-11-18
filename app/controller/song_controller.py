@@ -1,4 +1,4 @@
-from app.controller.base_controller import BaseController
+from controller.base_controller import BaseController
 from flask import jsonify, request
 
 # import use cases

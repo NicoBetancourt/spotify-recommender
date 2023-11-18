@@ -1,5 +1,5 @@
-from entities.song import Song
-from repositories.song_repository import SongRepository
+from domain.entities.song import Song
+from domain.repositories.song_repository import SongRepository
 
 class CreateSong:
 

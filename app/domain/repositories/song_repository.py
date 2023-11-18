@@ -1,5 +1,5 @@
-from app.db.driver import psql_driver
-from entities.song import Song
+from db.driver import psql_driver
+from domain.entities.song import Song
 
 COLLECTION_NAME = 'songs';
 
@@ -7,19 +7,19 @@ class SongRepository:
 
     def __init__(self):
         self.driver = psql_driver()
-        self.song = Song()
+        # self.song = Song()
 
     def get_song_by_id(self, id):
         song_data = self.driver.get_one(COLLECTION_NAME, id)
         if song_data is not None:
-            return self.song.from_dict(song_data)
+            return Song.from_dict(song_data)
         else:
             return None
 
     def get_all_songs(self):
         songs_data = self.driver.get_all(COLLECTION_NAME)
         if songs_data is not None:
-            return [self.song.from_dict(song_data) for song_data in songs_data]
+            return [Song.from_dict(song_data) for song_data in songs_data]
         else:
             return []
 

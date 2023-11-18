@@ -4,7 +4,7 @@ from config import config
 from db.client import create_new_table
 
 # Routes
-from routes import song_routes
+from routes.song_routes import song_routes
 
 app = Flask(__name__)
 
