@@ -2,8 +2,6 @@ import psycopg2
 from db.client import get_connection
 from decouple import config
 
-table_name = config('PGSQL_DATABASE')
-
 class psql_driver():
     @classmethod
     def create(self, table_name, columns, values):

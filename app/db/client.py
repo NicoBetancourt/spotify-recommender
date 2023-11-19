@@ -6,6 +6,18 @@ table_name = config('TABLE_NAME')
 
 def get_connection():
     try:
+        # # Crea la base de datos si no existe
+        # conn = psycopg2.connect(
+        #     host=config('PGSQL_HOST'),
+        #     user=config('PGSQL_USER'),
+        #     password=config('PGSQL_PASSWORD'),
+        #     port=config('PGSQL_PORT')
+        # )
+        # with conn.cursor() as cur:
+        #     cur.execute(f"CREATE DATABASE IF NOT EXISTS {config('PGSQL_DATABASE')}")
+        #     conn.commit()
+
+        # Conéctate a la base de datos
         return psycopg2.connect(
             host=config('PGSQL_HOST'),
             user=config('PGSQL_USER'),

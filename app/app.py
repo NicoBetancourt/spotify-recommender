@@ -22,7 +22,7 @@ if __name__ == '__main__':
     create_new_table()
 
     # Blueprints
-    app.register_blueprint(song_routes.main, url_prefix='/v1/spotify')
+    app.register_blueprint(song_routes, url_prefix='/v1/spotify')
 
     # Error handlers
     app.register_error_handler(404, page_not_found)
