@@ -58,7 +58,7 @@ class psql_driver():
             connection = get_connection()
 
             with connection.cursor() as cursor:
-                cursor.execute(f"SELECT * from {table_name} WHERE id = %s", (id,))
+                cursor.execute(f"SELECT * from {table_name} WHERE track_id = %s", (id,))
                 infoData = cursor.fetchone()
 
             connection.close()

@@ -6,17 +6,6 @@ table_name = config('TABLE_NAME')
 
 def get_connection():
     try:
-        # # Crea la base de datos si no existe
-        # conn = psycopg2.connect(
-        #     host=config('PGSQL_HOST'),
-        #     user=config('PGSQL_USER'),
-        #     password=config('PGSQL_PASSWORD'),
-        #     port=config('PGSQL_PORT')
-        # )
-        # with conn.cursor() as cur:
-        #     cur.execute(f"CREATE DATABASE IF NOT EXISTS {config('PGSQL_DATABASE')}")
-        #     conn.commit()
-
         # Conéctate a la base de datos
         return psycopg2.connect(
             host=config('PGSQL_HOST'),
@@ -33,8 +22,7 @@ def create_new_table():
     print('Crea la base de datos {} si no existe'.format(table_name))
     create_table = f"""
                 CREATE TABLE IF NOT EXISTS {table_name} (
-                    id SERIAL PRIMARY KEY,
-                    track_id VARCHAR(50),
+                    track_id CHAR(10) PRIMARY KEY,
                     track_name VARCHAR(255),
                     track_artist VARCHAR(255),
                     track_popularity SMALLINT,
