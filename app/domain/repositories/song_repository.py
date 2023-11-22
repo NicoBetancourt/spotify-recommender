@@ -16,8 +16,8 @@ class SongRepository:
         else:
             return None
 
-    def get_all_songs(self):
-        songs_data = self.driver.get_all(COLLECTION_NAME)
+    def get_all_songs(self,filters):
+        songs_data = self.driver.get_all(COLLECTION_NAME, self.filterMap(filters))
         if songs_data is not None:
             return [Song.list_to_json(song_data) for song_data in songs_data]
         else:
@@ -46,3 +46,12 @@ class SongRepository:
 
     def delete_song(self, id):
         self.driver.delete(COLLECTION_NAME, condition=f"track_id = '{id}'")
+
+    def filterMap(self, itemArray):
+        mapFilter = []
+        for item in itemArray:
+            if itemArray[item] is not None:
+                mapFilter.append(f"{item} LIKE '{itemArray[item]}'")
+
+        condition = ' AND '.join(mapFilter)
+        return condition

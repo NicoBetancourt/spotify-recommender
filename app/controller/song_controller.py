@@ -64,7 +64,8 @@ class SongController(BaseController):
     @staticmethod
     def get_all():
         try:
-            data = get_all_songs()
+            params = request.args
+            data = get_all_songs(params)
 
             response = {
                 "count": len(data),
