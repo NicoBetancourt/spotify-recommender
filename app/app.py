@@ -5,6 +5,7 @@ from db.client import create_new_table
 
 # Routes
 from routes.song_routes import song_routes
+from routes.admin_routes import admin_routes
 
 app = Flask(__name__)
 
@@ -23,6 +24,7 @@ if __name__ == '__main__':
 
     # Blueprints
     app.register_blueprint(song_routes, url_prefix='/v1/spotify')
+    app.register_blueprint(admin_routes, url_prefix='/v1/admin')
 
     # Error handlers
     app.register_error_handler(404, page_not_found)
