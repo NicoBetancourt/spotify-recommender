@@ -9,7 +9,7 @@ from routes.song_routes import song_routes
 app = Flask(__name__)
 
 # Es necesario para poder dejar acceder desde otros puertos
-CORS(app, resources={"*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={"*": {"origins": "http://localhost:5000"}})
 
 def page_not_found(error):
     return "<h1>Not found page</h1>"
