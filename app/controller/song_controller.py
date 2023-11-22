@@ -15,6 +15,24 @@ class SongController(BaseController):
                     return jsonify({'Error message': str(ex)}), 500
         
     @staticmethod
+    def create_many():
+        try:
+            json = request.json
+            count = 0
+            response = []
+            for song in json:
+                response.append(create_song(song))
+                count += 1
+
+            return {
+                "count": count,
+                "song": response,
+            }
+        
+        except Exception as ex:
+                    return jsonify({'Error message': str(ex)}), 500
+        
+    @staticmethod
     def update(id):
         try:
             json = request.json

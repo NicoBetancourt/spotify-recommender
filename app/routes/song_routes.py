@@ -16,6 +16,10 @@ def get_by_id(id):
 def create():
     return SongController.create()
 
+@song_routes.route('/create-many/', methods=['POST'])
+def create_many():
+    return SongController.create_many()
+
 @song_routes.route('/<id>', methods=['PUT'])
 def update(id):
     return SongController.update(id)
