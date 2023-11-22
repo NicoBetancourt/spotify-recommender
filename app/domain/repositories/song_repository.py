@@ -1,40 +1,48 @@
+from utils.uuii import UniqueId
 from db.driver import psql_driver
 from domain.entities.song import Song
 
-COLLECTION_NAME = 'songs';
+COLLECTION_NAME = 'songs'
 
 class SongRepository:
-
+    
     def __init__(self):
         self.driver = psql_driver()
-        # self.song = Song()
 
     def get_song_by_id(self, id):
         song_data = self.driver.get_one(COLLECTION_NAME, id)
         if song_data is not None:
-            return Song.from_dict(song_data)
+            return Song.list_to_json(song_data)
         else:
             return None
 
     def get_all_songs(self):
         songs_data = self.driver.get_all(COLLECTION_NAME)
         if songs_data is not None:
-            return [Song.from_dict(song_data) for song_data in songs_data]
+            return [Song.list_to_json(song_data) for song_data in songs_data]
         else:
             return []
 
     def create_song(self, song):
         song_data = song.to_dict()
-        return self.driver.create(COLLECTION_NAME, song_data.keys(), song_data.values())
+        if song_data['track_id']== None:
+            song_data['track_id'] = UniqueId.get_uuid()
+        numberSong = self.driver.create(COLLECTION_NAME, song_data.keys(), list(song_data.values()))
+        response = {
+            "song" : song_data,
+            "count": numberSong,
+        }
+        return response
 
-    def update_song(self, song):
+    def update_song(self, id, song):
         song_data = song.to_dict()
         self.driver.update(
             COLLECTION_NAME,
             song_data.keys(),
-            song_data.values(),
-            condition=f"id = {song.id}",
+            list(song_data.values()),
+            condition=f"track_id = '{id}'",
         )
+        return song_data
 
     def delete_song(self, id):
-        self.driver.delete(COLLECTION_NAME, condition=f"id = {id}")
+        self.driver.delete(COLLECTION_NAME, condition=f"track_id = '{id}'")

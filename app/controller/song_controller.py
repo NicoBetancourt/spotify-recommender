@@ -10,12 +10,7 @@ class SongController(BaseController):
     def create():
         try:
             json = request.json
-            data = create_song(json)
-
-            response = {
-                "count": data,
-            }
-            return response
+            return create_song(json)
         except Exception as ex:
                     return jsonify({'Error message': str(ex)}), 500
         
@@ -27,7 +22,7 @@ class SongController(BaseController):
 
             response = {
                 "id": id,
-                "info": data.to_dict(),
+                "song": data.to_dict(),
             }
 
             return response
@@ -41,6 +36,7 @@ class SongController(BaseController):
 
             response = {
                 "id": id,
+                "message": "song deleted"
             }
 
             return response
@@ -54,7 +50,7 @@ class SongController(BaseController):
 
             response = {
                 "count": len(data),
-                "info": [song.to_dict() for song in data],
+                "song": [song.to_dict() for song in data],
             }
 
             return response
@@ -68,7 +64,7 @@ class SongController(BaseController):
 
             response = {
                 "id": id,
-                "info": data.to_dict(),
+                "song": data.to_dict(),
             }
 
             return response
