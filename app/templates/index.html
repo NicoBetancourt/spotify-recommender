@@ -1,13 +1,66 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interfaz de Administración</title>
+    <title>Spotify Search</title>
 </head>
 <body>
-    <h1>Interfaz de Administración</h1>
-    <!-- Resto del contenido -->
+
+    <h1>Spotify Search</h1>
+
+    <form id="searchForm">
+        <label for="searchInput">ID:</label>
+        <input type="text" id="searchInput" name="id" required>
+        <button type="button" onclick="searchSpotify()">Search</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script>
+        function searchSpotify() {
+            var id = document.getElementById("searchInput").value;
+            var url = "http://localhost:5000/v1/spotify/" + id;
+
+            // Realizar una solicitud AJAX aquí y manejar la respuesta
+            // Puedes usar fetch o XMLHttpRequest para hacer la solicitud
+            // Aquí hay un ejemplo básico usando fetch:
+            fetch(url)
+                .then(response => response.json())
+                .then(data => displayResults(data))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function displayResults(data) {
+            var resultsDiv = document.getElementById("results");
+            console.log(resultsDiv);
+            // Limpiar resultados anteriores
+            resultsDiv.innerHTML = "";
+
+            // Crear una tabla para mostrar los resultados
+            var table = document.createElement("table");
+            var headerRow = table.insertRow(0);
+
+            // Crear encabezados de tabla basados en las claves del primer objeto en los resultados
+            for (var key in data[0]) {
+                var headerCell = headerRow.insertCell(-1);
+                headerCell.textContent = key;
+            }
+
+            // Llenar la tabla con los datos
+            for (var i = 0; i < data.length; i++) {
+                var row = table.insertRow(-1);
+
+                for (var key in data[i]) {
+                    var cell = row.insertCell(-1);
+                    cell.textContent = data[i][key];
+                }
+            }
+
+            // Agregar la tabla al div de resultados
+            resultsDiv.appendChild(table);
+        }
+    </script>
+
 </body>
 </html>

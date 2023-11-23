@@ -10,7 +10,7 @@ from routes.admin_routes import admin_routes
 app = Flask(__name__)
 
 # Es necesario para poder dejar acceder desde otros puertos
-CORS(app, resources={"*": {"origins": "http://localhost:5000"}})
+CORS(app)
 
 def page_not_found(error):
     return "<h1>Not found page</h1>"
