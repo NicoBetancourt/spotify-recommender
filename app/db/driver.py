@@ -14,7 +14,6 @@ class psql_driver():
                 affected_rows = cursor.rowcount
                 connection.commit()
                 cursor.close()
-                print("Registro creado exitosamente.") # Logger
             return affected_rows
         except psycopg2.Error as e:
             raise Exception(e)

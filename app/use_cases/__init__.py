@@ -4,6 +4,7 @@ from use_cases.get_all_songs import GetAllSongs
 from use_cases.get_song import GetSong
 from use_cases.update_song import UpdateSong
 from use_cases.delete_song import DeleteSong
+from use_cases.load_songs import LoadSongs
 
 # Repos
 from domain.repositories.song_repository import SongRepository
@@ -16,4 +17,5 @@ get_all_songs = GetAllSongs(_info_repo).execute
 get_song_by_id = GetSong(_info_repo).execute
 update_song = UpdateSong(_info_repo).execute
 delete_song = DeleteSong(_info_repo).execute
+load_songs = LoadSongs(_info_repo).execute
 
