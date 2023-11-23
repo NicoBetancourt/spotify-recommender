@@ -40,7 +40,7 @@ class Song():
             track_popularity=data.get('track_popularity'),
             track_album_id=data.get('track_album_id'),
             track_album_name=data.get('track_album_name'),
-            track_album_release_date=DateFormat.str_to_date(data.get('track_album_release_date')),
+            track_album_release_date=data.get('track_album_release_date'),
             playlist_name=data.get('playlist_name'),
             playlist_id=data.get('playlist_id'),
             playlist_genre=data.get('playlist_genre'),
@@ -67,7 +67,7 @@ class Song():
             'track_popularity': self.track_popularity,
             'track_album_id': self.track_album_id,
             'track_album_name': self.track_album_name,
-            'track_album_release_date': DateFormat.str_to_date(self.track_album_release_date),
+            'track_album_release_date': self.track_album_release_date,
             'playlist_name': self.playlist_name,
             'playlist_id': self.playlist_id,
             'playlist_genre': self.playlist_genre,
@@ -101,7 +101,7 @@ class Song():
         song.track_popularity = values[3]
         song.track_album_id = values[4]
         song.track_album_name = values[5]
-        song.track_album_release_date = DateFormat.date_to_str(values[6])
+        song.track_album_release_date = values[6]
         song.playlist_name = values[7]
         song.playlist_id = values[8]
         song.playlist_genre = values[9]
