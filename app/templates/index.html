@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
+
 <body>
+    <div class="container mt-5">
+        <h1>Spotify Search</h1>
 
-    <h1>Spotify Search</h1>
+        <form id="searchForm">
+            <div class="mb-3">
+                <label for="searchInput" class="form-label">Nombre de la canción:</label>
+                <input type="text" class="form-control" id="searchInput" name="id" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="searchSpotify()">Search</button>
+        </form>
 
-    <form id="searchForm">
-        <label for="searchInput">Nombre de la canción:</label>
-        <input type="text" id="searchInput" name="id" required>
-        <button type="button" onclick="searchSpotify()">Search</button>
-    </form>
-
-    <div id="results"></div>
+        <div id="results" class="mt-4"></div>
+    </div>
 
     <script>
         function searchSpotify() {
@@ -24,34 +31,60 @@
 
             fetch(url)
                 .then(response => response.json())
-                .then(data => displayResults(data))
+                .then(data => displayResults(filterColumns(data)))
                 .catch(error => console.error('Error:', error));
         }
 
-        function displayResults(dataComplete) {
+        function filterColumns(dataComplete) {
             data = dataComplete.song;
+            console.log("🚀 ~ file: index.html:39 ~ filterColumns ~ data:", data)
+            var filteredData = [];
+            for (var i = 0; i < data.length; i++) {
+                var row = {};
+                row["track_name"] = data[i]["track_name"];
+                row["track_artist"] = data[i]["track_artist"];
+                row["track_album_name"] = data[i]["track_album_name"];
+                row["playlist_genre"] = data[i]["playlist_genre"];
+                row["track_album_release_date"] = data[i]["track_album_release_date"];
+                filteredData.push(row);
+            }
+            return filteredData;
+        }
+
+        function displayResults(data) {
+            // data = dataComplete.song;
             var resultsDiv = document.getElementById("results");
-            
+
             // Limpiar resultados anteriores
             resultsDiv.innerHTML = "";
 
-            // Crear una tabla para mostrar los resultados
+            // Crear una tabla con estilos de Bootstrap
             var table = document.createElement("table");
-            var headerRow = table.insertRow(0);
+            table.classList.add("table", "table-bordered", "table-striped");
 
-            // Crear encabezados de tabla basados en las claves del primer objeto en los resultados
-            for (var key in data[0]) {
+            // Crear encabezados de tabla con 6 columnas específicas
+            var headerRow = table.insertRow(0);
+            var columnHeaders = ["", "Name", "Artista", "Álbum", "Género", "Fecha"];
+            for (var i = 0; i < columnHeaders.length; i++) {
                 var headerCell = headerRow.insertCell(-1);
-                headerCell.textContent = key;
+                headerCell.textContent = columnHeaders[i];
             }
 
             // Llenar la tabla con los datos
             for (var i = 0; i < data.length; i++) {
                 var row = table.insertRow(-1);
 
-                for (var key in data[i]) {
+                // Agregar botón de selección en la primera columna
+                var selectCell = row.insertCell(0);
+                var selectButton = document.createElement("button");
+                selectButton.classList.add("btn", "btn-success");
+                selectButton.textContent = "+";
+                selectCell.appendChild(selectButton);
+
+                // Llenar las restantes 5 columnas con datos
+                for (var j = 0; j < 5; j++) {
                     var cell = row.insertCell(-1);
-                    cell.textContent = data[i][key];
+                    cell.textContent = data[i][Object.keys(data[i])[j]];
                 }
             }
 
@@ -59,6 +92,6 @@
             resultsDiv.appendChild(table);
         }
     </script>
-
 </body>
+
 </html>
