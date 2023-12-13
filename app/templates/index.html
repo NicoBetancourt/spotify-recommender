@@ -71,15 +71,44 @@
             }
 
             // Llenar la tabla con los datos
-            for (var i = 0; i < data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
                 var row = table.insertRow(-1);
 
-                // Agregar botón de selección en la primera columna
+                // Crear botónes de selección y deselección
                 var selectCell = row.insertCell(0);
-                var selectButton = document.createElement("button");
+                let selectButton = document.createElement("button");
+                let deselectButton = document.createElement("button");
+
+                // Estilo de los botones
                 selectButton.classList.add("btn", "btn-success");
                 selectButton.textContent = "+";
+                selectButton.onclick = function () {
+                    // Esconder el botón de selección y mostrar el de deselección
+                    selectButton.style.display = "none";   
+                    deselectButton.style.display = "block"; 
+                    AddSongToPlaylist(data[i]);
+                };
+                
+                deselectButton.classList.add("btn", "btn-danger");
+                deselectButton.textContent = "-";
+                deselectButton.style.display = "none"; // Empezar escondido
+                deselectButton.onclick = function () {
+                    // Esconder el botón de deselección y mostrar el de selección
+                    deselectButton.style.display = "none";
+                    selectButton.style.display = "block";
+                    RemoveSongFromPlaylist(data[i]);
+                };
+
+                // Tamaño de los botones para que sean iguales
+                selectButton.style.width = "100%";
+                selectButton.style.height = "auto";
+
+                deselectButton.style.width = "100%";
+                deselectButton.style.height = "auto";
+                
+                // Agregar botones a la primera columna
                 selectCell.appendChild(selectButton);
+                selectCell.appendChild(deselectButton);
 
                 // Llenar las restantes 5 columnas con datos
                 for (var j = 0; j < 5; j++) {
@@ -90,6 +119,28 @@
 
             // Agregar la tabla al div de resultados
             resultsDiv.appendChild(table);
+        }
+        
+        var selectedSongs = {};// Diccionario con las canciones seleccionadas
+        /// <summary> Agrerga una canción a la lista de playlist </summary>
+        /// <param name="songData"> Datos de la canción a agregar </param>
+        function AddSongToPlaylist(songData)
+        {
+            // Update the playlist table
+            UpdatePlaylistTable();
+        }
+
+        /// <summary> Elimina una canción de la lista de playlist </summary>
+        /// <param name="songData"> Datos de la canción a eliminar </param>
+        function RemoveSongFromPlaylist(songData)
+        {
+            // Update the playlist table
+            UpdatePlaylistTable();
+        }
+
+        function UpdatePlaylistTable()
+        {
+
         }
     </script>
 </body>
