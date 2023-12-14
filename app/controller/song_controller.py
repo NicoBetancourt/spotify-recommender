@@ -2,7 +2,7 @@ from controller.base_controller import BaseController
 from flask import jsonify, request
 
 # import use cases
-from use_cases import create_song, get_song_by_id, get_all_songs, update_song, delete_song
+from use_cases.song import create_song, get_song_by_id, get_all_songs, update_song, delete_song
 
 class SongController(BaseController):
 

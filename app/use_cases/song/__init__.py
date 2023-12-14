@@ -1,10 +1,10 @@
 # Use cases package
-from use_cases.create_song import CreateSong
-from use_cases.get_all_songs import GetAllSongs
-from use_cases.get_song import GetSong
-from use_cases.update_song import UpdateSong
-from use_cases.delete_song import DeleteSong
-from use_cases.load_songs import LoadSongs
+from use_cases.song.create_song import CreateSong
+from use_cases.song.get_all_songs import GetAllSongs
+from use_cases.song.get_song import GetSong
+from use_cases.song.update_song import UpdateSong
+from use_cases.song.delete_song import DeleteSong
+from use_cases.song.load_songs import LoadSongs
 
 # Repos
 from domain.repositories.song_repository import SongRepository
