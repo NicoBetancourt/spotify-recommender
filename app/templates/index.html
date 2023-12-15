@@ -141,11 +141,24 @@
                 // Estilo de los botones
                 selectButton.classList.add("btn", "btn-success");
                 selectButton.textContent = "+";
+                deselectButton.classList.add("btn", "btn-danger");
+                deselectButton.textContent = "-";
+                deselectButton.style.display = "none"; // Ocultar botón de deselección por defecto
 
                 // Utilizar una función de cierre para capturar el valor de i
                 selectButton.onclick = (function (index) {
                     return function () {
+                        selectButton.style.display = "none"; 
+                        deselectButton.style.display = "inline-block";
                         addToSelected(data[index]);
+                    };
+                })(i);
+
+                deselectButton.onclick = (function (index) {
+                    return function () {
+                        selectButton.style.display = "inline-block";
+                        deselectButton.style.display = "none";
+                        removeFromSelected(data[index]);
                     };
                 })(i);
 
@@ -161,26 +174,86 @@
 
             // Agregar la tabla al div de resultados
             resultsDiv.appendChild(table);
+
+            // Inicializar tabla de canciones seleccionadas 
+            updateSelectedTable();
         }
 
+        // Lista de canciones seleccionadas
+        var selectedSongs = [];
+        // Agregar canción seleccionada a la lista
         function addToSelected(selectedData) {
+            // Add song to the list
+            selectedSongs.push(selectedData);
+            // Update table
+            updateSelectedTable();
+        }
+
+        /// Remove song from selected list
+        function removeFromSelected(song)
+        {
+            //Remove song from the list
+            selectedSongs.splice(selectedSongs.indexOf(song), 1);
+            //Update table
+            updateSelectedTable(); 
+        }
+
+        function updateSelectedTable()
+        {
             var selectedDiv = document.getElementById("selectedResults");
 
-            // Crear una tabla para mostrar las canciones seleccionadas
+            // Limpiar resultados anteriores
+            selectedDiv.innerHTML = "";
+
+            // Si no hay canciones seleccionadas, mostrar un mensaje
+            if (selectedSongs.length == 0) {
+                selectedDiv.innerHTML = "<p>No hay canciones seleccionadas</p>";    
+                return;
+            }
+
+            // Crear una tabla con estilos de Bootstrap
             var selectedTable = document.createElement("table");
             selectedTable.classList.add("table", "table-bordered", "table-striped");
 
-            // Crear una fila para la nueva canción seleccionada
-            var selectedRow = selectedTable.insertRow(-1);
+            // Crear encabezados de tabla con 2 columnas
+            var headerRow = selectedTable.insertRow(0);
+            var columnHeaders = ["", "Name", "Artista"];
+            for (var i = 0; i < columnHeaders.length; i++) {
+                var headerCell = headerRow.insertCell(-1);
+                headerCell.textContent = columnHeaders[i];
+            }
 
-            // Llenar las columnas con los datos de la canción seleccionada
-            for (var i = 0; i < Object.keys(selectedData).length; i++) {
-                var cell = selectedRow.insertCell(-1);
-                cell.textContent = selectedData[Object.keys(selectedData)[i]];
+            // Llenar la tabla con las canciones seleccionadas
+            for (var i = 0; i < selectedSongs.length; i++) {
+                var row = selectedTable.insertRow(-1);
+
+                // Crear botón de deselección
+                var selectCell = row.insertCell(0);
+                let deselectButton = document.createElement("button");
+
+                // Estilo de los botones
+                deselectButton.classList.add("btn", "btn-danger");
+                deselectButton.textContent = "-";
+
+                // Utilizar una función de cierre para capturar el valor de i
+                deselectButton.onclick = (function (index) {
+                    return function () {
+                        removeFromSelected(selectedSongs[index]);
+                    };
+                })(i);
+
+                selectCell.appendChild(deselectButton);
+
+                // Llenar las restantes 2 columnas con datos
+                for (var j = 0; j < 2; j++) {
+                    var cell = row.insertCell(-1);
+                    cell.textContent = selectedSongs[i][Object.keys(selectedSongs[i])[j]];
+                }
             }
 
             // Agregar la tabla al div de canciones seleccionadas
             selectedDiv.appendChild(selectedTable);
+
         }
     </script>
 </body>
