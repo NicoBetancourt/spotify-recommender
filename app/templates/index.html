@@ -31,12 +31,20 @@
             overflow: hidden;    /* Ensures the content respects the border radius */
         }
         
-        .no-border {
-            border: none;
+        /* Spotify color scheme */
+        .spotify-table {
+            background-color: #1DB954; /* Spotify Green */
+            color: black; /* Text color for the table */
         }
 
-        .no-border th, td {
-            border: none;
+        .spotify-table thead {
+            background-color: #191414; /* Spotify Dark Grey */
+            color: #FFFFFF; /* White text for the header */
+        }
+
+        .spotify-table td,
+        .spotify-table th {
+            border: none !important; /* Remove cell borders */
         }
 
         #searchInput {
@@ -160,7 +168,18 @@
                 selectButton.textContent = "+";
                 deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
                 deselectButton.textContent = "-";
-                deselectButton.style.display = "none"; // Ocultar botón de deselección por defecto
+                // Ocultar boto de deseleccion si la lista está vacia o no contiene la canción
+                if(isSongSelected(data[i]))
+                {
+                    selectButton.style.display = "none"; // Ocultar botón de selección
+                    deselectButton.style.display = "inline-block"; // Mostrar botón de deselección
+                }
+                else
+                {
+                    selectButton.style.display = "inline-block"; // Mostrar botón de selección
+                    deselectButton.style.display = "none"; // Ocultar botón de deselección
+                }
+
 
                 // Utilizar una función de cierre para capturar el valor de i
                 selectButton.onclick = (function (index) {
@@ -278,6 +297,20 @@
                 deselectButton.style.display = isSelected ? "inline-block" : "none";
             }
         });
+    }
+
+    // Comprobar si la canción ya está seleccionada
+    function isSongSelected(song) {
+        // Si la lista está vacia, no hay canciones seleccionadas
+        if(selectedSongs.length == 0)
+            return false;
+
+        for (var i = 0; i < selectedSongs.length; i++) {
+            if (selectedSongs[i].track_name === song.track_name && selectedSongs[i].track_artist === song.track_artist) {
+                return true;
+            }
+        }
+        return false;
     }
     </script>
 </body>
