@@ -23,8 +23,8 @@ class ModelController(BaseController):
             songs = recommend_songs(id, n_songs)
 
             return {
-                "count": songs,
-                "song": len(songs),
+                "count":  len(songs),
+                "songs": songs,
             }
         
         except Exception as ex:
