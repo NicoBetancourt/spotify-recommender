@@ -16,6 +16,7 @@
             max-height: 400px;
             overflow-y: auto;
             margin-bottom: 20px;
+            border-radius: 10px;
         }
 
         table {
@@ -25,10 +26,17 @@
             width: 100%;
         }
 
-        th, td {
-            border: 1px solid hwb(122 2% 44%);
-            padding: 8px;
-            text-align: left;
+        .rounded-table {
+            border-radius: 10px;  /* Adjust the radius as needed */
+            overflow: hidden;    /* Ensures the content respects the border radius */
+        }
+        
+        .no-border {
+            border: none;
+        }
+
+        .no-border th, td {
+            border: none;
         }
 
         #searchInput {
@@ -126,7 +134,7 @@
 
             // Crear una tabla con estilos de Bootstrap
             var table = document.createElement("table");
-            table.classList.add("table", "table-bordered", "table-striped");
+            table.classList.add("table", "rounded-table", "table-striped");
 
             // Crear encabezados de tabla con 6 columnas específicas
             var headerRow = table.insertRow(0);
@@ -218,7 +226,7 @@
 
         // Create a table
         var selectedTable = document.createElement("table");
-        selectedTable.classList.add("table", "table-bordered", "table-striped");
+        selectedTable.classList.add("table", "rounded-table", "table-striped");
 
         // Add table header
         var headerRow = selectedTable.insertRow(-1);
