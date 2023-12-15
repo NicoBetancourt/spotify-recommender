@@ -35,6 +35,15 @@
             width: 100%;
             max-width: 400px;
         }
+
+        .btn-song-action {
+            width: 30px;  /* Set the desired width */
+            height: 30px; /* Set the desired height */
+            display: flex;        /* Use flexbox for alignment */
+            justify-content: center; /* Center horizontally */
+            align-items: center;  /* Center vertically */
+            padding: 0; /* Remove padding to ensure proper centering */
+        }  
     </style>
 </head>
 
@@ -165,9 +174,9 @@
                 let deselectButton = document.createElement("button");
 
                 // Estilo de los botones
-                selectButton.classList.add("btn", "btn-success");
+                selectButton.classList.add("btn", "btn-success", "btn-song-action");
                 selectButton.textContent = "+";
-                deselectButton.classList.add("btn", "btn-danger");
+                deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
                 deselectButton.textContent = "-";
                 deselectButton.style.display = "none"; // Ocultar botón de deselección por defecto
 
@@ -215,93 +224,79 @@
             updateSelectedTable();
         }
 
-        /// Remove song from selected list
-        function removeFromSelected(song)
-        {
-            //Remove song from the list
-            selectedSongs.splice(selectedSongs.indexOf(song), 1);
-            //Update table
-            updateSelectedTable(); 
+        function removeFromSelected(song, index) {
+        selectedSongs.splice(index, 1); // Remove the song
+        updateSelectedTable(); // Update the table
+
+        // Additionally, update the corresponding button in the results table
+        updateResultsButtonState(song, false);
+    }
+
+        function updateSelectedTable() {
+        var selectedDiv = document.getElementById("selectedResults");
+        selectedDiv.innerHTML = "";
+
+        // If no songs are selected, display a message
+        if (selectedSongs.length === 0) {
+            selectedDiv.innerHTML = "<p>No hay canciones seleccionadas</p>";
+            return;
         }
 
-        function updateSelectedTable()
-        {
-            var selectedDiv = document.getElementById("selectedResults");
+        // Create a table
+        var selectedTable = document.createElement("table");
+        selectedTable.classList.add("table", "table-bordered", "table-striped");
 
-            // Limpiar resultados anteriores
-            selectedDiv.innerHTML = "";
+        // Add table header
+        var headerRow = selectedTable.insertRow(-1);
+        ["", "Name", "Artista"].forEach(headerText => {
+            var headerCell = headerRow.insertCell(-1);
+            headerCell.textContent = headerText;
+        });
 
-            // Si no hay canciones seleccionadas, mostrar un mensaje
-            if (selectedSongs.length == 0) {
-                selectedDiv.innerHTML = "<p>No hay canciones seleccionadas</p>";    
-                return;
+        // Add rows for each selected song
+        selectedSongs.forEach((song, index) => {
+            var row = selectedTable.insertRow(-1);
+            addRowToSelectedTable(row, song, index);
+        });
+
+        selectedDiv.appendChild(selectedTable);
+    }
+
+    function addRowToSelectedTable(row, song, index) {
+        // Deselect button
+        var deselectCell = row.insertCell(0);
+        var deselectButton = document.createElement("button");
+        deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
+        deselectButton.textContent = "-";
+        deselectButton.onclick = () => removeFromSelected(song, index);
+        deselectCell.appendChild(deselectButton);
+
+        // Song name and artist
+        var nameCell = row.insertCell(-1);
+        nameCell.textContent = song.track_name;
+        var artistCell = row.insertCell(-1);
+        artistCell.textContent = song.track_artist;
+    }
+
+    function updateResultsButtonState(song, isSelected) {
+        var rows = document.querySelectorAll("#results table tr");
+        rows.forEach((row, index) => {
+            if (index === 0) return; // Skip the header row
+
+            // Assuming the first two cells contain the song name and artist
+            var songName = row.cells[1].textContent;
+            var artistName = row.cells[2].textContent;
+
+            if (song.track_name === songName && song.track_artist === artistName) {
+                var selectButton = row.cells[0].querySelector("button.btn-success");
+                var deselectButton = row.cells[0].querySelector("button.btn-danger");
+
+                // Update button visibility based on whether the song is selected
+                selectButton.style.display = isSelected ? "none" : "inline-block";
+                deselectButton.style.display = isSelected ? "inline-block" : "none";
             }
-
-            // Crear una tabla con estilos de Bootstrap
-            var selectedTable = document.createElement("table");
-            selectedTable.classList.add("table", "table-bordered", "table-striped");
-
-            // Crear encabezados de tabla con 2 columnas
-            var headerRow = selectedTable.insertRow(0);
-            var columnHeaders = ["", "Name", "Artista"];
-            for (var i = 0; i < columnHeaders.length; i++) {
-                var headerCell = headerRow.insertCell(-1);
-                headerCell.textContent = columnHeaders[i];
-            }
-
-            // Llenar la tabla con las canciones seleccionadas
-            for (var i = 0; i < selectedSongs.length; i++) {
-                var row = selectedTable.insertRow(-1);
-
-                // Crear botón de deselección
-                var selectCell = row.insertCell(0);
-                let deselectButton = document.createElement("button");
-
-                // Estilo de los botones
-                deselectButton.classList.add("btn", "btn-danger");
-                deselectButton.textContent = "-";
-
-                // Utilizar una función de cierre para capturar el valor de i
-                deselectButton.onclick = (function (index) {
-                    return function () {
-                        removeFromSelected(selectedSongs[index]);
-                    };
-                })(i);
-
-                selectCell.appendChild(deselectButton);
-
-                // Llenar las restantes 2 columnas con datos
-                for (var j = 0; j < 2; j++) {
-                    var cell = row.insertCell(-1);
-                    cell.textContent = selectedSongs[i][Object.keys(selectedSongs[i])[j]];
-                }
-            }
-
-            // Agregar la tabla al div de canciones seleccionadas
-            selectedDiv.appendChild(selectedTable);
-
-        }
-
-        function editSong(song) {
-            // Llenar el formulario modal con los datos existentes
-            document.getElementById("editName").value = song.track_name;
-            // Completa con más campos según tus datos
-
-            // Mostrar el modal de edición
-            $('#editModal').modal('show');
-        }
-
-        function saveChanges() {
-            // Lógica para guardar los cambios realizados en el formulario modal
-            // Puedes obtener los datos editados del formulario y realizar las acciones necesarias
-
-            // Actualizar la tabla después de la edición
-            updateSelectedTable();
-
-            // Cerrar el modal después de guardar los cambios
-            $('#editModal').modal('hide');
-        }
-        
+        });
+    }
     </script>
 </body>
 
