@@ -1,4 +1,3 @@
-from use_cases.model.train_model import TrainModel
 from domain.repositories.song_repository import SongRepository
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import MinMaxScaler
@@ -50,6 +49,6 @@ class RecommenderSongs:
         for i in range(0,n_songs):
             recommended_songs.append(self._song_repository.get_song_by_id(df_songs.iloc[indices[0][i]]['track_id']).to_dict())
 
-        print(f'Canciones más similares a la canción de referencia:\n{similar_songs}')
+        # print(f'Canciones más similares a la canción de referencia:\n{similar_songs}')
 
         return recommended_songs
