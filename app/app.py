@@ -2,11 +2,12 @@ from flask_cors import CORS
 from flask import Flask
 from config import config
 from db.client import initialize_database, create_new_table, check_empty_table
-from use_cases import load_songs
+from use_cases.song import load_songs
 
 # Routes
 from routes.song_routes import song_routes
 from routes.admin_routes import admin_routes
+from routes.model_routes import model_routes
 
 app = Flask(__name__)
 
@@ -27,6 +28,7 @@ if __name__ == '__main__':
     # Blueprints
     app.register_blueprint(song_routes, url_prefix='/v1/spotify')
     app.register_blueprint(admin_routes, url_prefix='/v1/admin')
+    app.register_blueprint(model_routes, url_prefix='/v1/model')
 
     if check_empty_table():
         load_songs()
