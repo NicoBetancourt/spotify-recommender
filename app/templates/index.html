@@ -16,19 +16,35 @@
             max-height: 400px;
             overflow-y: auto;
             margin-bottom: 20px;
+            border-radius: 10px;
         }
 
         table {
-            border: 1px solid #000000;
+            border: 1px solid #f91919;
             border-collapse: collapse;
             margin-bottom: 20px;
             width: 100%;
         }
 
-        th, td {
-            border: 1px solid hwb(122 2% 44%);
-            padding: 8px;
-            text-align: left;
+        .rounded-table {
+            border-radius: 10px;  /* Adjust the radius as needed */
+            overflow: hidden;    /* Ensures the content respects the border radius */
+        }
+        
+        /* Spotify color scheme */
+        .spotify-table {
+            background-color: #1DB954; /* Spotify Green */
+            color: black; /* Text color for the table */
+        }
+
+        .spotify-table thead {
+            background-color: #191414; /* Spotify Dark Grey */
+            color: #FFFFFF; /* White text for the header */
+        }
+
+        .spotify-table td,
+        .spotify-table th {
+            border: none !important; /* Remove cell borders */
         }
 
         #searchInput {
@@ -44,6 +60,27 @@
             align-items: center;  /* Center vertically */
             padding: 0; /* Remove padding to ensure proper centering */
         }  
+
+        /* Spotify color scheme */
+        .spotify-table {
+            background-color: #1DB954; /* Spotify Green */
+            color: black; /* Text color for the table */
+        }
+
+        .spotify-table thead {
+            background-color: #191414; /* Spotify Dark Grey */
+            color: #FFFFFF; /* White text for the header */
+        }
+
+        /* Nuevos estilos para el botón de editar */
+        .btn-edit-action {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
     </style>
 </head>
 
@@ -84,32 +121,49 @@
             </div>
         </div>
 
-        
-    <!-- Modal para edición -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Editar Canción</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editForm">
-                        <div class="mb-3">
-                            <label for="editName" class="form-label">Nombre de la canción:</label>
-                            <input type="text" class="form-control" id="editName" name="track_name" required>
-                        </div>
-                        <!-- Agrega más campos según tus datos -->
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveChanges()">Guardar Cambios</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
+            Editar Resultados
+        </button>
+
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Editar Resultados</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editForm">
+                            <div class="mb-3">
+                                <label for="editName" class="form-label">Nombre de la canción:</label>
+                                <input type="text" class="form-control" id="editName" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editArtist" class="form-label">Artista:</label>
+                                <input type="text" class="form-control" id="editArtist" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editAlbum" class="form-label">Álbum:</label>
+                                <input type="text" class="form-control" id="editAlbum" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editGenre" class="form-label">Género:</label>
+                                <input type="text" class="form-control" id="editGenre" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editReleaseDate" class="form-label">Fecha de lanzamiento:</label>
+                                <input type="text" class="form-control" id="editReleaseDate" required>
+                            </div>
+
+                            <button type="button" class="btn btn-primary" onclick="saveEdit()">Guardar Cambios</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
     </div>
 
 
@@ -121,7 +175,11 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => displayResults(filterColumns(data)))
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching data. Please try again.');
+                });
+
         }
 
         function filterColumns(dataComplete) {
@@ -152,7 +210,7 @@
 
             // Crear una tabla con estilos de Bootstrap
             var table = document.createElement("table");
-            table.classList.add("table", "table-bordered", "table-striped");
+            table.classList.add("table", "rounded-table", "table-striped");
 
             // Crear encabezados de tabla con 6 columnas específicas
             var headerRow = table.insertRow(0);
@@ -178,7 +236,18 @@
                 selectButton.textContent = "+";
                 deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
                 deselectButton.textContent = "-";
-                deselectButton.style.display = "none"; // Ocultar botón de deselección por defecto
+                // Ocultar boto de deseleccion si la lista está vacia o no contiene la canción
+                if(isSongSelected(data[i]))
+                {
+                    selectButton.style.display = "none"; // Ocultar botón de selección
+                    deselectButton.style.display = "inline-block"; // Mostrar botón de deselección
+                }
+                else
+                {
+                    selectButton.style.display = "inline-block"; // Mostrar botón de selección
+                    deselectButton.style.display = "none"; // Ocultar botón de deselección
+                }
+
 
                 // Utilizar una función de cierre para capturar el valor de i
                 selectButton.onclick = (function (index) {
@@ -230,7 +299,7 @@
 
         // Additionally, update the corresponding button in the results table
         updateResultsButtonState(song, false);
-    }
+        }
 
         function updateSelectedTable() {
         var selectedDiv = document.getElementById("selectedResults");
@@ -244,7 +313,7 @@
 
         // Create a table
         var selectedTable = document.createElement("table");
-        selectedTable.classList.add("table", "table-bordered", "table-striped");
+        selectedTable.classList.add("table", "rounded-table", "table-striped");
 
         // Add table header
         var headerRow = selectedTable.insertRow(-1);
@@ -297,7 +366,64 @@
             }
         });
     }
+
+    // Comprobar si la canción ya está seleccionada
+    function isSongSelected(song) {
+        // Si la lista está vacia, no hay canciones seleccionadas
+        if(selectedSongs.length == 0)
+            return false;
+
+        for (var i = 0; i < selectedSongs.length; i++) {
+            if (selectedSongs[i].track_name === song.track_name && selectedSongs[i].track_artist === song.track_artist) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Nueva función para abrir el modal de edición con los datos del resultado seleccionado
+    function openEditModal(index) {
+        editIndex = index;
+        var result = data[index];
+
+        document.getElementById("editName").value = result.track_name;
+        document.getElementById("editArtist").value = result.track_artist;
+        // Agrega más líneas para otros campos
+
+        // Inicializa el modal antes de mostrarlo
+        var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        editModal.show();
+}
+
+    // Nueva función para guardar los cambios editados
+    function saveEdit() {
+    var newName = document.getElementById("editName").value;
+    var newArtist = document.getElementById("editArtist").value;
+    var newAlbum = document.getElementById("editAlbum").value;
+    var newGenre = document.getElementById("editGenre").value;
+    var newReleaseDate = document.getElementById("editReleaseDate").value;
+
+    // Validate that required fields are not empty
+    if (!newName || !newArtist || !newAlbum || !newGenre || !newReleaseDate) {
+        alert("Please fill in all the fields.");
+        return;
+    }
+
+        data[editIndex].track_name = newName;
+        data[editIndex].track_artist = newArtist;
+        data[editIndex].track_album_name = newAlbum;
+        data[editIndex].track_genre = newGenre;
+        data[editIndex].track_album_release_date = newReleaseDate;
+
+        var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        editModal.hide();
+
+        displayResults(data);
+    }
     </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 
 </html>
