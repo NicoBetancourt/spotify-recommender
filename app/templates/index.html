@@ -9,7 +9,22 @@
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <style>
         body {
-            background-color: #91ef6590;
+            background: linear-gradient(to bottom, #1DB954, #191414);
+            min-height: 100vh;
+            background-attachment: fixed;
+            color: #FFFFFF;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        h1, h2, h3 {
+            font-weight: bold; /* Bold for headings */
+            text-shadow: 1px 1px 2px black; /* Optional text shadow */
+        }
+
+        p {
+            font-size: 16px; /* Comfortable reading size for body text */
+            line-height: 1.6; /* Adequate line spacing */
+            /* ... other styles ... */
         }
 
         .table-container {
@@ -29,22 +44,7 @@
         .rounded-table {
             border-radius: 10px;  /* Adjust the radius as needed */
             overflow: hidden;    /* Ensures the content respects the border radius */
-        }
-        
-        /* Spotify color scheme */
-        .spotify-table {
-            background-color: #1DB954; /* Spotify Green */
-            color: black; /* Text color for the table */
-        }
 
-        .spotify-table thead {
-            background-color: #191414; /* Spotify Dark Grey */
-            color: #FFFFFF; /* White text for the header */
-        }
-
-        .spotify-table td,
-        .spotify-table th {
-            border: none !important; /* Remove cell borders */
         }
 
         #searchInput {
@@ -111,6 +111,24 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => displayResults(filterColumns(data)))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function getRecommendations() {
+            // Lista de los id de las canciones seleccionadas
+            var songIDs = selectedSongs.map(song => song.track_id);
+
+            // JSON para el request
+            var requestBody = {
+                "id": songIDs,
+                "n_songs": 5
+            };
+
+            var url = "http://127.0.0.1:5000/v1/model/recommend/";
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => displayRecommendations(data))
                 .catch(error => console.error('Error:', error));
         }
 
@@ -226,92 +244,135 @@
         }
 
         function removeFromSelected(song, index) {
-        selectedSongs.splice(index, 1); // Remove the song
-        updateSelectedTable(); // Update the table
+            selectedSongs.splice(index, 1); // Remove the song
+            updateSelectedTable(); // Update the table
 
-        // Additionally, update the corresponding button in the results table
-        updateResultsButtonState(song, false);
-    }
+            // Additionally, update the corresponding button in the results table
+            updateResultsButtonState(song, false);
+        }
 
         function updateSelectedTable() {
-        var selectedDiv = document.getElementById("selectedResults");
-        selectedDiv.innerHTML = "";
+            var selectedDiv = document.getElementById("selectedResults");
+            selectedDiv.innerHTML = "";
 
-        // If no songs are selected, display a message
-        if (selectedSongs.length === 0) {
-            selectedDiv.innerHTML = "<p>No hay canciones seleccionadas</p>";
-            return;
+            // If no songs are selected, display a message
+            if (selectedSongs.length === 0) {
+                selectedDiv.innerHTML = "<p>No hay canciones seleccionadas</p>";
+                return;
+            }
+
+            // Create a table
+            var selectedTable = document.createElement("table");
+            selectedTable.classList.add("table", "rounded-table", "table-striped");
+
+            // Add table header
+            var headerRow = selectedTable.insertRow(-1);
+            ["", "Name", "Artista"].forEach(headerText => {
+                var headerCell = headerRow.insertCell(-1);
+                headerCell.textContent = headerText;
+            });
+
+            // Add rows for each selected song
+            selectedSongs.forEach((song, index) => {
+                var row = selectedTable.insertRow(-1);
+                addRowToSelectedTable(row, song, index);
+            });
+
+            selectedDiv.appendChild(selectedTable);
+
+            // Añadir botón de recomendaciones
+            var recomendationsButton = document.createElement("button");
+            recomendationsButton.classList.add("btn", "btn-primary");
+            recomendationsButton.textContent = "Recomendar";
+            recomendationsButton.onclick = () => getRecommendations();
+            selectedDiv.appendChild(recomendationsButton);
         }
 
-        // Create a table
-        var selectedTable = document.createElement("table");
-        selectedTable.classList.add("table", "rounded-table", "table-striped");
+        function addRowToSelectedTable(row, song, index) {
+            // Deselect button
+            var deselectCell = row.insertCell(0);
+            var deselectButton = document.createElement("button");
+            deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
+            deselectButton.textContent = "-";
+            deselectButton.onclick = () => removeFromSelected(song, index);
+            deselectCell.appendChild(deselectButton);
 
-        // Add table header
-        var headerRow = selectedTable.insertRow(-1);
-        ["", "Name", "Artista"].forEach(headerText => {
-            var headerCell = headerRow.insertCell(-1);
-            headerCell.textContent = headerText;
-        });
+            // Song name and artist
+            var nameCell = row.insertCell(-1);
+            nameCell.textContent = song.track_name;
+            var artistCell = row.insertCell(-1);
+            artistCell.textContent = song.track_artist;
+        }
 
-        // Add rows for each selected song
-        selectedSongs.forEach((song, index) => {
-            var row = selectedTable.insertRow(-1);
-            addRowToSelectedTable(row, song, index);
-        });
+        function updateResultsButtonState(song, isSelected) {
+            var rows = document.querySelectorAll("#results table tr");
+            rows.forEach((row, index) => {
+                if (index === 0) return; // Skip the header row
 
-        selectedDiv.appendChild(selectedTable);
-    }
+                // Assuming the first two cells contain the song name and artist
+                var songName = row.cells[1].textContent;
+                var artistName = row.cells[2].textContent;
 
-    function addRowToSelectedTable(row, song, index) {
-        // Deselect button
-        var deselectCell = row.insertCell(0);
-        var deselectButton = document.createElement("button");
-        deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
-        deselectButton.textContent = "-";
-        deselectButton.onclick = () => removeFromSelected(song, index);
-        deselectCell.appendChild(deselectButton);
+                if (song.track_name === songName && song.track_artist === artistName) {
+                    var selectButton = row.cells[0].querySelector("button.btn-success");
+                    var deselectButton = row.cells[0].querySelector("button.btn-danger");
 
-        // Song name and artist
-        var nameCell = row.insertCell(-1);
-        nameCell.textContent = song.track_name;
-        var artistCell = row.insertCell(-1);
-        artistCell.textContent = song.track_artist;
-    }
+                    // Update button visibility based on whether the song is selected
+                    selectButton.style.display = isSelected ? "none" : "inline-block";
+                    deselectButton.style.display = isSelected ? "inline-block" : "none";
+                }
+            });
+        }
 
-    function updateResultsButtonState(song, isSelected) {
-        var rows = document.querySelectorAll("#results table tr");
-        rows.forEach((row, index) => {
-            if (index === 0) return; // Skip the header row
+        // Comprobar si la canción ya está seleccionada
+        function isSongSelected(song) {
+            // Si la lista está vacia, no hay canciones seleccionadas
+            if(selectedSongs.length == 0)
+                return false;
 
-            // Assuming the first two cells contain the song name and artist
-            var songName = row.cells[1].textContent;
-            var artistName = row.cells[2].textContent;
-
-            if (song.track_name === songName && song.track_artist === artistName) {
-                var selectButton = row.cells[0].querySelector("button.btn-success");
-                var deselectButton = row.cells[0].querySelector("button.btn-danger");
-
-                // Update button visibility based on whether the song is selected
-                selectButton.style.display = isSelected ? "none" : "inline-block";
-                deselectButton.style.display = isSelected ? "inline-block" : "none";
+            for (var i = 0; i < selectedSongs.length; i++) {
+                if (selectedSongs[i].track_name === song.track_name && selectedSongs[i].track_artist === song.track_artist) {
+                    return true;
+                }
             }
-        });
-    }
-
-    // Comprobar si la canción ya está seleccionada
-    function isSongSelected(song) {
-        // Si la lista está vacia, no hay canciones seleccionadas
-        if(selectedSongs.length == 0)
             return false;
-
-        for (var i = 0; i < selectedSongs.length; i++) {
-            if (selectedSongs[i].track_name === song.track_name && selectedSongs[i].track_artist === song.track_artist) {
-                return true;
-            }
         }
-        return false;
-    }
+
+        // Mostrar tabla  de recomendaciones
+        function displayRecommendations(data)
+        {
+            var recomendationsDiv = document.getElementById("recommendations");
+            // Clear the prev table
+            recomendationsDiv.innerHTML = "";
+
+            // Crear tabla
+            var recomendationsTable = document.createElement("table");
+            recomendationsTable.classList.add("table", "rounded-table", "table-striped");
+            // Agregar encabezados
+            var headerRow = recomendationsTable.insertRow(-1);
+            ["Name", "Artista", "Album"].forEach(headerText => {
+                var headerCell = headerRow.insertCell(-1);
+                headerCell.textContent = headerText;
+            });
+
+            // Agregar filas de las canciones
+            data.forEach(song => {
+                var row = recomendationsTable.insertRow(-1);
+                addRowToRecomendationsTable(row, song);
+            });
+        }
+
+
+        // Crear la row para cada canción
+        function addRowToRecomendationsTable(row, song) {
+            // Song name and artist
+            var nameCell = row.insertCell(-1);
+            nameCell.textContent = song.track_name;
+            var artistCell = row.insertCell(-1);
+            artistCell.textContent = song.track_artist;
+            var albumCell = row.insertCell(-1);
+            albumCell.textContent = song.track_album_name;
+        }
     </script>
 </body>
 
