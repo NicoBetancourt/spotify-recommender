@@ -7,9 +7,27 @@
     <title>Spotify Search</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.15.0/font/bootstrap-icons.css">
+
+
     <style>
         body {
-            background-color: #91ef6590;
+            background: linear-gradient(to bottom, #1DB954, #191414);
+            min-height: 100vh;
+            background-attachment: fixed;
+            color: #FFFFFF;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        h1, h2, h3 {
+            font-weight: bold; /* Bold for headings */
+            text-shadow: 1px 1px 2px black; /* Optional text shadow */
+        }
+
+        p {
+            font-size: 16px; /* Comfortable reading size for body text */
+            line-height: 1.6; /* Adequate line spacing */
+            /* ... other styles ... */
         }
 
         .table-container {
@@ -20,7 +38,7 @@
         }
 
         table {
-            border: 1px solid #f91919;
+            border: 1px solid #000000;
             border-collapse: collapse;
             margin-bottom: 20px;
             width: 100%;
@@ -29,22 +47,7 @@
         .rounded-table {
             border-radius: 10px;  /* Adjust the radius as needed */
             overflow: hidden;    /* Ensures the content respects the border radius */
-        }
-        
-        /* Spotify color scheme */
-        .spotify-table {
-            background-color: #1DB954; /* Spotify Green */
-            color: black; /* Text color for the table */
-        }
 
-        .spotify-table thead {
-            background-color: #191414; /* Spotify Dark Grey */
-            color: #FFFFFF; /* White text for the header */
-        }
-
-        .spotify-table td,
-        .spotify-table th {
-            border: none !important; /* Remove cell borders */
         }
 
         #searchInput {
@@ -61,18 +64,6 @@
             padding: 0; /* Remove padding to ensure proper centering */
         }  
 
-        /* Spotify color scheme */
-        .spotify-table {
-            background-color: #1DB954; /* Spotify Green */
-            color: black; /* Text color for the table */
-        }
-
-        .spotify-table thead {
-            background-color: #191414; /* Spotify Dark Grey */
-            color: #FFFFFF; /* White text for the header */
-        }
-
-        /* Nuevos estilos para el botón de editar */
         .btn-edit-action {
             width: 30px;
             height: 30px;
@@ -81,6 +72,17 @@
             align-items: center;
             padding: 0;
         }
+
+        /* Style for the modal content */
+        #editModal label {
+        color: #000000;
+         }
+
+         #editModal .modal-content {
+        background-color: #1DB954; 
+        color: #FFFFFF; 
+         }
+
     </style>
 </head>
 
@@ -88,13 +90,21 @@
     <div class="container mt-5">
         <h1>Spotify Search</h1>
 
-        <form id="searchForm">
+        <form id="searchForm" class="position-relative">
             <div class="mb-3">
                 <label for="searchInput" class="form-label">Nombre de la canción:</label>
                 <input type="text" class="form-control" id="searchInput" name="id" maxlength="50" required>
             </div>
             <button type="button" class="btn btn-primary" onclick="searchSpotify()">Search</button>
+
+            <div class="position-absolute top-0 end-0" style="margin-top: 10px;">
+                <!-- Ajustar la clase del botón y agregar estilos para el icono -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
+                    <i class="bi bi-plus"></i> AÑADIR CANCIÓN
+                </button>
+            </div>
         </form>
+
 
         <div class="row">
             <!-- Tabla de resultados -->
@@ -121,15 +131,11 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
-            Editar Resultados
-        </button>
-
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="editModalLabel">Editar Resultados</h5>
+                        <h5 class="modal-title" id="editModalLabel">Añadir canción</h5>
                     </div>
                     <div class="modal-body">
                         <form id="editForm">
@@ -168,6 +174,9 @@
 
 
     <script>
+
+        var resultsTable;
+
         function searchSpotify() {
             var id = document.getElementById("searchInput").value;
             var url = "http://localhost:5000/v1/spotify/?track_name=" + id;
@@ -175,19 +184,46 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => displayResults(filterColumns(data)))
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while fetching data. Please try again.');
-                });
+                .catch(error => console.error('Error:', error));
+        }
 
+        function addSong() {
+            // Inicializa el modal antes de mostrarlo
+            var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }
+
+        function getRecommendations() {
+            // Lista de los id de las canciones seleccionadas
+            var songIDs = selectedSongs.map(song => song.track_id);
+
+            // JSON para el request
+            var requestBody = {
+                "id": songIDs,
+                "n_songs": 5
+            };
+
+            var url = "http://127.0.0.1:5000/v1/model/recommend/";
+
+            fetch(url, {
+                method: 'POST', // Specify the method
+                headers: {
+                    'Content-Type': 'application/json' // Specify the content type
+                },
+                body: JSON.stringify(requestBody) // Convert the requestBody object to a JSON string
+            })
+            .then(response => response.json())
+            .then(data =>  displayRecommendations(data.songs))
+            .catch(error => console.error('Error:', error));
         }
 
         function filterColumns(dataComplete) {
+            console.log("🚀 ~ file: index.html:39 ~ filterColumns ~ dataComplete", dataComplete)
             data = dataComplete.song;
-            console.log("🚀 ~ file: index.html:39 ~ filterColumns ~ data:", data)
             var filteredData = [];
             for (var i = 0; i < data.length; i++) {
                 var row = {};
+                row["track_id"] = data[i]["track_id"];
                 row["track_name"] = data[i]["track_name"];
                 row["track_artist"] = data[i]["track_artist"];
                 row["track_album_name"] = data[i]["track_album_name"];
@@ -199,6 +235,7 @@
         }
 
         function displayResults(data) {
+            console.log("🚀 ~ file: index.html:39 ~ displayResults ~ data", data)
             var resultsDiv = document.getElementById("results");
             var selectedDiv = document.getElementById("selectedResults");
             var recommendationsDiv = document.getElementById("recommendations");
@@ -270,7 +307,7 @@
                 selectCell.appendChild(deselectButton);
 
                 // Llenar las restantes 5 columnas con datos
-                for (var j = 0; j < 5; j++) {
+                for (var j = 1; j <= 5; j++) {
                     var cell = row.insertCell(-1);
                     cell.textContent = data[i][Object.keys(data[i])[j]];
                 }
@@ -294,136 +331,205 @@
         }
 
         function removeFromSelected(song, index) {
-        selectedSongs.splice(index, 1); // Remove the song
-        updateSelectedTable(); // Update the table
+            selectedSongs.splice(index, 1); // Remove the song
+            updateSelectedTable(); // Update the table
 
-        // Additionally, update the corresponding button in the results table
-        updateResultsButtonState(song, false);
+            // Additionally, update the corresponding button in the results table
+            updateResultsButtonState(song, false);
         }
 
         function updateSelectedTable() {
-        var selectedDiv = document.getElementById("selectedResults");
-        selectedDiv.innerHTML = "";
+            var selectedDiv = document.getElementById("selectedResults");
+            selectedDiv.innerHTML = "";
 
-        // If no songs are selected, display a message
-        if (selectedSongs.length === 0) {
-            selectedDiv.innerHTML = "<p>No hay canciones seleccionadas</p>";
-            return;
+            // If no songs are selected, display a message
+            if (selectedSongs.length === 0) {
+                selectedDiv.innerHTML = "<p>No hay canciones seleccionadas</p>";
+                return;
+            }
+
+            // Create a table
+            var selectedTable = document.createElement("table");
+            selectedTable.classList.add("table", "rounded-table", "table-striped");
+
+            // Add table header
+            var headerRow = selectedTable.insertRow(-1);
+            ["", "Name", "Artista"].forEach(headerText => {
+                var headerCell = headerRow.insertCell(-1);
+                headerCell.textContent = headerText;
+            });
+
+            // Add rows for each selected song
+            selectedSongs.forEach((song, index) => {
+                var row = selectedTable.insertRow(-1);
+                addRowToSelectedTable(row, song, index);
+            });
+
+            selectedDiv.appendChild(selectedTable);
+
+            // Añadir botón de recomendaciones
+            var recomendationsButton = document.createElement("button");
+            recomendationsButton.classList.add("btn", "btn-primary");
+            recomendationsButton.textContent = "Recomendar";
+            recomendationsButton.onclick = () => getRecommendations();
+            selectedDiv.appendChild(recomendationsButton);
         }
 
-        // Create a table
-        var selectedTable = document.createElement("table");
-        selectedTable.classList.add("table", "rounded-table", "table-striped");
+        function addRowToSelectedTable(row, song, index) {
+            // Deselect button
+            var deselectCell = row.insertCell(0);
+            var deselectButton = document.createElement("button");
+            deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
+            deselectButton.textContent = "-";
+            deselectButton.onclick = () => removeFromSelected(song, index);
+            deselectCell.appendChild(deselectButton);
 
-        // Add table header
-        var headerRow = selectedTable.insertRow(-1);
-        ["", "Name", "Artista"].forEach(headerText => {
-            var headerCell = headerRow.insertCell(-1);
-            headerCell.textContent = headerText;
-        });
+            // Song name and artist
+            var nameCell = row.insertCell(-1);
+            nameCell.textContent = song.track_name;
+            var artistCell = row.insertCell(-1);
+            artistCell.textContent = song.track_artist;
+        }
 
-        // Add rows for each selected song
-        selectedSongs.forEach((song, index) => {
-            var row = selectedTable.insertRow(-1);
-            addRowToSelectedTable(row, song, index);
-        });
+        function updateResultsButtonState(song, isSelected) {
+            var rows = document.querySelectorAll("#results table tr");
+            rows.forEach((row, index) => {
+                if (index === 0) return; // Saltar la fila de encabezado
 
-        selectedDiv.appendChild(selectedTable);
-    }
+                // Asumiendo que las dos primeras celdas contienen el nombre de la canción y el artista
+                var songName = row.cells[1].textContent;
+                var artistName = row.cells[2].textContent;
 
-    function addRowToSelectedTable(row, song, index) {
-        // Deselect button
-        var deselectCell = row.insertCell(0);
-        var deselectButton = document.createElement("button");
-        deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
-        deselectButton.textContent = "-";
-        deselectButton.onclick = () => removeFromSelected(song, index);
-        deselectCell.appendChild(deselectButton);
+                if (song.track_name === songName && song.track_artist === artistName) {
+                    var selectButton = row.cells[0].querySelector("button.btn-success");
+                    var deselectButton = row.cells[0].querySelector("button.btn-danger");
 
-        // Song name and artist
-        var nameCell = row.insertCell(-1);
-        nameCell.textContent = song.track_name;
-        var artistCell = row.insertCell(-1);
-        artistCell.textContent = song.track_artist;
-    }
+                    // Actualiza la visibilidad del botón según si la canción está seleccionada
+                    selectButton.style.display = isSelected ? "none" : "inline-block";
+                    deselectButton.style.display = isSelected ? "inline-block" : "none";
+                }
+            });
+        }
 
-    function updateResultsButtonState(song, isSelected) {
-        var rows = document.querySelectorAll("#results table tr");
-        rows.forEach((row, index) => {
-            if (index === 0) return; // Skip the header row
+        // Comprobar si la canción ya está seleccionada
+        function isSongSelected(song) {
+            // Si la lista está vacia, no hay canciones seleccionadas
+            if(selectedSongs.length == 0)
+                return false;
 
-            // Assuming the first two cells contain the song name and artist
-            var songName = row.cells[1].textContent;
-            var artistName = row.cells[2].textContent;
-
-            if (song.track_name === songName && song.track_artist === artistName) {
-                var selectButton = row.cells[0].querySelector("button.btn-success");
-                var deselectButton = row.cells[0].querySelector("button.btn-danger");
-
-                // Update button visibility based on whether the song is selected
-                selectButton.style.display = isSelected ? "none" : "inline-block";
-                deselectButton.style.display = isSelected ? "inline-block" : "none";
+            for (var i = 0; i < selectedSongs.length; i++) {
+                if (selectedSongs[i].track_name === song.track_name && selectedSongs[i].track_artist === song.track_artist) {
+                    return true;
+                }
             }
-        });
-    }
-
-    // Comprobar si la canción ya está seleccionada
-    function isSongSelected(song) {
-        // Si la lista está vacia, no hay canciones seleccionadas
-        if(selectedSongs.length == 0)
             return false;
-
-        for (var i = 0; i < selectedSongs.length; i++) {
-            if (selectedSongs[i].track_name === song.track_name && selectedSongs[i].track_artist === song.track_artist) {
-                return true;
-            }
         }
-        return false;
-    }
 
-    // Nueva función para abrir el modal de edición con los datos del resultado seleccionado
-    function openEditModal(index) {
-        editIndex = index;
-        var result = data[index];
+        // Mostrar tabla  de recomendaciones
+        function displayRecommendations(data)
+        {
+            console.log("🚀 ~ file: index.html:39 ~ displayRecommendations ~ data", data)
+            var recomendationsDiv = document.getElementById("recommendations");
+            // Clear the prev table
+            recomendationsDiv.innerHTML = "";
 
-        document.getElementById("editName").value = result.track_name;
-        document.getElementById("editArtist").value = result.track_artist;
-        // Agrega más líneas para otros campos
+            // Crear tabla
+            var recomendationsTable = document.createElement("table");
+            recomendationsTable.classList.add("table", "rounded-table", "table-striped");
+            // Agregar encabezados
+            var headerRow = recomendationsTable.insertRow(-1);
+            ["Name", "Artista", "Album"].forEach(headerText => {
+                var headerCell = headerRow.insertCell(-1);
+                headerCell.textContent = headerText;
+            });
 
-        // Inicializa el modal antes de mostrarlo
-        var editModal = new bootstrap.Modal(document.getElementById('editModal'));
-        editModal.show();
-}
+            // Agregar filas de las canciones
+            data.forEach(song => {
+                var row = recomendationsTable.insertRow(-1);
+                addRowToRecomendationsTable(row, song);
+            });
 
-    // Nueva función para guardar los cambios editados
-    function saveEdit() {
-    var newName = document.getElementById("editName").value;
-    var newArtist = document.getElementById("editArtist").value;
-    var newAlbum = document.getElementById("editAlbum").value;
-    var newGenre = document.getElementById("editGenre").value;
-    var newReleaseDate = document.getElementById("editReleaseDate").value;
+            recomendationsDiv.appendChild(recomendationsTable);
+        }
 
-    // Validate that required fields are not empty
-    if (!newName || !newArtist || !newAlbum || !newGenre || !newReleaseDate) {
-        alert("Please fill in all the fields.");
-        return;
-    }
 
-        data[editIndex].track_name = newName;
-        data[editIndex].track_artist = newArtist;
-        data[editIndex].track_album_name = newAlbum;
-        data[editIndex].track_genre = newGenre;
-        data[editIndex].track_album_release_date = newReleaseDate;
+        // Crear la row para cada canción
+        function addRowToRecomendationsTable(row, song) {
+            // Song name and artist
+            var nameCell = row.insertCell(-1);
+            nameCell.textContent = song.track_name;
+            var artistCell = row.insertCell(-1);
+            artistCell.textContent = song.track_artist;
+            var albumCell = row.insertCell(-1);
+            albumCell.textContent = song.track_album_name;
+        }
 
-        var editModal = new bootstrap.Modal(document.getElementById('editModal'));
-        editModal.hide();
+        function openEditModal(index) {
+            editIndex = index;
+            var result = data[index];
 
-        displayResults(data);
-    }
+            document.getElementById("editName").value = result.track_name;
+            document.getElementById("editArtist").value = result.track_artist;
+            // Add more lines for other fields
+
+            // Initialize the modal before showing it
+            var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }
+
+        // Nueva función para guardar los cambios editados
+        function saveEdit() {
+            var newName = document.getElementById("editName").value;
+            var newArtist = document.getElementById("editArtist").value;
+            var newAlbum = document.getElementById("editAlbum").value;
+            var newGenre = document.getElementById("editGenre").value;
+            var newReleaseDate = document.getElementById("editReleaseDate").value;
+
+            // Validate that required fields are not empty
+            if (!newName || !newArtist || !newAlbum || !newGenre || !newReleaseDate) {
+                alert("Por favor, complete todos los campos.");
+                return;
+            }
+
+            // Update the row in the table directly
+            var editedRow = resultsTable.rows[editIndex + 1]; // Add 1 to skip the header row
+            editedRow.cells[1].textContent = newName;
+            editedRow.cells[2].textContent = newArtist;
+            editedRow.cells[3].textContent = newAlbum;
+            editedRow.cells[4].textContent = newGenre;
+            editedRow.cells[5].textContent = newReleaseDate;
+
+            // Update the corresponding data in the selected songs list, if present
+            if (selectedSongs.length > 0) {
+                var editedSong = selectedSongs.find(song =>
+                    song.track_name === result.track_name && song.track_artist === result.track_artist
+                );
+
+                if (editedSong) {
+                    editedSong.track_name = newName;
+                    editedSong.track_artist = newArtist;
+                    editedSong.track_album_name = newAlbum;
+                    editedSong.playlist_genre = newGenre;
+                    editedSong.track_album_release_date = newReleaseDate;
+                }
+            }
+
+          // Actualizar la variable resultsTable
+            resultsTable = document.querySelector("#results table");
+            
+            var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.hide();
+        }
+
     </script>
 
+    <!-- Reemplazar la referencia a bootstrap-icons.css con la versión 1.15.0 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.15.0/font/bootstrap-icons.css">
+
+    <!-- Asegurarse de que jQuery y Bootstrap estén cargados correctamente -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
 </body>
 
 </html>
