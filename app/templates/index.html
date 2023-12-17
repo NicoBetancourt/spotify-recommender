@@ -135,10 +135,14 @@
             </div>
             <button type="button" class="btn btn-primary" onclick="searchSpotify()">Search</button>
 
+            <div class="position-absolute top-4 end-0" style="margin-top: 10px;">
+                <button type="button" class="btn btn-primary" onclick="openEditSelectedModal()">Editar Canción Seleccionada</button>
+            </div>
+
             <div class="position-absolute top-0 end-0" style="margin-top: 10px;">
                 <!-- Ajustar la clase del botón y agregar estilos para el icono -->
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal">
-                    <i class="bi bi-plus"></i> AÑADIR CANCIÓN
+                    <i class="bi bi-plus"></i> Añadir canciones
                 </button>
             </div>
         </form>
@@ -525,6 +529,27 @@
             var editModal = new bootstrap.Modal(document.getElementById('editModal'));
             editModal.show();
         }
+
+        function openEditSelectedModal() {
+            // Check if there is exactly one selected song
+            if (selectedSongs.length === 1) {
+                // Populate the edit modal with the details of the selected song
+                var selectedSong = selectedSongs[0];
+                document.getElementById("editName").value = selectedSong.track_name;
+                document.getElementById("editArtist").value = selectedSong.track_artist;
+                document.getElementById("editAlbum").value = selectedSong.track_album_name;
+                document.getElementById("editGenre").value = selectedSong.playlist_genre;
+                document.getElementById("editReleaseDate").value = selectedSong.track_album_release_date;
+
+                // Initialize the modal before showing it
+                var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                editModal.show();
+            } else {
+                // Display a message if more or fewer than one song is selected
+                alert("Por favor, seleccione exactamente una canción para editar.");
+            }
+        }
+
 
         // Nueva función para guardar los cambios editados
         function saveEdit() {
