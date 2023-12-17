@@ -17,6 +17,7 @@
             background-attachment: fixed;
             color: #FFFFFF;
             font-family: 'Roboto', sans-serif;
+            display: flex;
         }
 
         h1, h2, h3 {
@@ -30,24 +31,52 @@
             /* ... other styles ... */
         }
 
-        .table-container {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            border-radius: 10px;
+        .table-container table td {
+            max-width: 100px; /* Ajusta el valor según sea necesario */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Añade puntos suspensivos (...) si el contenido es demasiado largo */
+            white-space: nowrap; /* Evita que el texto se divida en varias líneas */
         }
 
-        table {
-            border: 1px solid #000000;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            width: 100%;
+        /* Estilo específico para las tablas de Canciones Seleccionadas y Recomendaciones */
+        .table-container.narrow-table table td {
+            max-width: 80px; /* Ajusta el valor según sea necesario */
+        }
+
+        /* Estilo para hacer que el botón de eliminar sea más visible */
+        .btn-song-action {
+            width: 50px; /* Ajusta el ancho del botón de eliminar */
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        /* Estilo para mejorar la visibilidad del botón de añadir canción */
+        .btn-primary {
+            background-color: #1f76f7;
+            border-color: #1f76f7;
+        }
+
+        .btn-primary:hover {
+            background-color: #147d41;
+            border-color: #147d41;
+        }
+
+        /* Estilo para la barra de desplazamiento en la tabla */
+        .table-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: #ffffff;
+            border-radius: 5px;
         }
 
         .rounded-table {
             border-radius: 10px;  /* Adjust the radius as needed */
             overflow: hidden;    /* Ensures the content respects the border radius */
-
         }
 
         #searchInput {
@@ -81,13 +110,22 @@
          #editModal .modal-content {
         background-color: #1DB954; 
         color: #FFFFFF; 
-         }
+         } 
+
+        #results .btn-delete {
+        width: 80px; /* Ajusta el ancho del botón de eliminar según tus preferencias */
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+    }
 
     </style>
 </head>
 
 <body>
-    <div class="container mt-5">
+    <div class="container-fluid mt-5">
         <h1>Spotify Search</h1>
 
         <form id="searchForm" class="position-relative">
@@ -235,7 +273,6 @@
         }
 
         function displayResults(data) {
-            console.log("🚀 ~ file: index.html:39 ~ displayResults ~ data", data)
             var resultsDiv = document.getElementById("results");
             var selectedDiv = document.getElementById("selectedResults");
             var recommendationsDiv = document.getElementById("recommendations");
@@ -249,9 +286,9 @@
             var table = document.createElement("table");
             table.classList.add("table", "rounded-table", "table-striped");
 
-            // Crear encabezados de tabla con 6 columnas específicas
+            // Crear encabezados de tabla con 7 columnas específicas (added Delete column)
             var headerRow = table.insertRow(0);
-            var columnHeaders = ["", "Name", "Artista", "Álbum", "Género", "Fecha"];
+            var columnHeaders = ["", "Name", "Artista", "Álbum", "Género", "Fecha", "Eliminar"]; // Added "Eliminar" header
             for (var i = 0; i < columnHeaders.length; i++) {
                 var headerCell = headerRow.insertCell(-1);
                 headerCell.textContent = columnHeaders[i];
@@ -263,33 +300,32 @@
             for (var i = 0; i < Math.min(numRowsToDisplay, data.length); i++) {
                 var row = table.insertRow(-1);
 
-                // Crear botónes de selección y deselección
+                // Crear botones de selección, deselección y eliminación
                 var selectCell = row.insertCell(0);
                 let selectButton = document.createElement("button");
                 let deselectButton = document.createElement("button");
+                let deleteButton = document.createElement("button");
 
-                // Estilo de los botones
+                // Estilo de los botones (Select, Deselect, Delete)
                 selectButton.classList.add("btn", "btn-success", "btn-song-action");
                 selectButton.textContent = "+";
                 deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
                 deselectButton.textContent = "-";
-                // Ocultar boto de deseleccion si la lista está vacia o no contiene la canción
-                if(isSongSelected(data[i]))
-                {
-                    selectButton.style.display = "none"; // Ocultar botón de selección
-                    deselectButton.style.display = "inline-block"; // Mostrar botón de deselección
-                }
-                else
-                {
-                    selectButton.style.display = "inline-block"; // Mostrar botón de selección
-                    deselectButton.style.display = "none"; // Ocultar botón de deselección
+                deleteButton.classList.add("btn", "btn-danger", "btn-song-action", "btn-delete");
+                deleteButton.textContent = "Eliminar";
+                // Ocultar botones de selección/deselección si la lista está vacía o no contiene la canción
+                if (isSongSelected(data[i])) {
+                    selectButton.style.display = "none";
+                    deselectButton.style.display = "inline-block";
+                } else {
+                    selectButton.style.display = "inline-block";
+                    deselectButton.style.display = "none";
                 }
 
-
-                // Utilizar una función de cierre para capturar el valor de i
+                // Asignar funciones a los botones (Select, Deselect, Delete)
                 selectButton.onclick = (function (index) {
                     return function () {
-                        selectButton.style.display = "none"; 
+                        selectButton.style.display = "none";
                         deselectButton.style.display = "inline-block";
                         addToSelected(data[index]);
                     };
@@ -303,6 +339,12 @@
                     };
                 })(i);
 
+                deleteButton.onclick = (function (index) {
+                    return function () {
+                        deleteSong(data[index]);
+                    };
+                })(i);
+
                 selectCell.appendChild(selectButton);
                 selectCell.appendChild(deselectButton);
 
@@ -311,14 +353,19 @@
                     var cell = row.insertCell(-1);
                     cell.textContent = data[i][Object.keys(data[i])[j]];
                 }
-            } 
+
+                // Añadir columna de botón de eliminación
+                var deleteCell = row.insertCell(-1);
+                deleteCell.appendChild(deleteButton);
+            }
 
             // Agregar la tabla al div de resultados
             resultsDiv.appendChild(table);
 
-            // Inicializar tabla de canciones seleccionadas 
+            // Inicializar tabla de canciones seleccionadas
             updateSelectedTable();
         }
+
 
         // Lista de canciones seleccionadas
         var selectedSongs = [];
@@ -403,10 +450,12 @@
                 if (song.track_name === songName && song.track_artist === artistName) {
                     var selectButton = row.cells[0].querySelector("button.btn-success");
                     var deselectButton = row.cells[0].querySelector("button.btn-danger");
+                    var deleteButton = row.cells[0].querySelector("button.btn-danger");
 
                     // Actualiza la visibilidad del botón según si la canción está seleccionada
                     selectButton.style.display = isSelected ? "none" : "inline-block";
                     deselectButton.style.display = isSelected ? "inline-block" : "none";
+                    deleteButton.style.display = isSelected ? "inline-block" : "none";
                 }
             });
         }
@@ -519,6 +568,27 @@
             
             var editModal = new bootstrap.Modal(document.getElementById('editModal'));
             editModal.hide();
+        }
+
+        function deleteSong(song) {
+            // Remove the song from the results table
+            var rows = document.querySelectorAll("#results table tr");
+            rows.forEach((row, index) => {
+                if (index === 0) return; // Skip the header row
+
+                var songName = row.cells[1].textContent;
+                var artistName = row.cells[2].textContent;
+
+                if (song.track_name === songName && song.track_artist === artistName) {
+                    row.remove();
+
+                    // Update the corresponding button in the selected songs table
+                    updateSelectedTable();
+
+                    // Remove the song from the selected songs list
+                    removeFromSelected(song, index - 1);
+                }
+            });
         }
 
     </script>
