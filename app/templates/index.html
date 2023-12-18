@@ -9,7 +9,6 @@
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.15.0/font/bootstrap-icons.css">
 
-
     <style>
         body {
             background: linear-gradient(to bottom, #1DB954, #191414);
@@ -60,7 +59,7 @@
         }
 
         .btn-primary:hover {
-            background-color: #147d41;
+            background-color: #95bf21;
             border-color: #147d41;
         }
 
@@ -230,6 +229,13 @@
         }
 
         function addSong() {
+            // Limpia los campos del formulario de edición
+            document.getElementById("editName").value = "";
+            document.getElementById("editArtist").value = "";
+            document.getElementById("editAlbum").value = "";
+            document.getElementById("editGenre").value = "";
+            document.getElementById("editReleaseDate").value = "";
+
             // Inicializa el modal antes de mostrarlo
             var editModal = new bootstrap.Modal(document.getElementById('editModal'));
             editModal.show();
@@ -256,6 +262,54 @@
             })
             .then(response => response.json())
             .then(data =>  displayRecommendations(data.songs))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function deleteSongFromServer(trackId) {
+            var url = "http://localhost:5000/v1/song/delete_song/" + trackId; // Ajusta la URL según tu backend
+
+            fetch(url, {
+                method: 'DELETE', // Especifica el método DELETE para eliminar
+                headers: {
+                    'Content-Type': 'application/json' // Especifica el tipo de contenido
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Canción eliminada del servidor con éxito');
+                } else {
+                    console.error('Error al eliminar canción del servidor');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Función para guardar cambios en una canción en el servidor
+        function saveChangesToServer(trackId, name, artist, album, genre, releaseDate) {
+            var url = "http://localhost:5000/v1/song/update_song/" + trackId; // Ajusta la URL según tu backend
+
+            var requestBody = {
+                "track_name": name,
+                "track_artist": artist,
+                "track_album_name": album,
+                "playlist_genre": genre,
+                "track_album_release_date": releaseDate
+            };
+
+            fetch(url, {
+                method: 'PUT', // Especifica el método PUT para actualizar
+                headers: {
+                    'Content-Type': 'application/json' // Especifica el tipo de contenido
+                },
+                body: JSON.stringify(requestBody) // Convierte el objeto requestBody a una cadena JSON
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Cambios guardados con éxito en el servidor');
+                } else {
+                    console.error('Error al guardar cambios en el servidor');
+                }
+            })
             .catch(error => console.error('Error:', error));
         }
 
@@ -369,7 +423,6 @@
             // Inicializar tabla de canciones seleccionadas
             updateSelectedTable();
         }
-
 
         // Lista de canciones seleccionadas
         var selectedSongs = [];
@@ -505,7 +558,6 @@
             recomendationsDiv.appendChild(recomendationsTable);
         }
 
-
         // Crear la row para cada canción
         function addRowToRecomendationsTable(row, song) {
             // Song name and artist
@@ -518,14 +570,29 @@
         }
 
         function openEditModal(index) {
+            // Setea el índice de edición
             editIndex = index;
-            var result = data[index];
 
-            document.getElementById("editName").value = result.track_name;
-            document.getElementById("editArtist").value = result.track_artist;
-            // Add more lines for other fields
+            // Si editIndex es un número válido, estamos editando una canción existente
+            if (typeof editIndex === 'number' && editIndex >= 0) {
+                // Obtén los datos de la canción existente y configura los campos del modal
+                var result = data[editIndex];
+                document.getElementById("editName").value = result.track_name;
+                document.getElementById("editArtist").value = result.track_artist;
+                document.getElementById("editAlbum").value = result.track_album_name;
+                document.getElementById("editGenre").value = result.playlist_genre;
+                document.getElementById("editReleaseDate").value = result.track_album_release_date;
+            } else {
+                // Si editIndex no es un número válido, estamos añadiendo una nueva canción
+                // Limpia los campos del modal
+                document.getElementById("editName").value = "";
+                document.getElementById("editArtist").value = "";
+                document.getElementById("editAlbum").value = "";
+                document.getElementById("editGenre").value = "";
+                document.getElementById("editReleaseDate").value = "";
+            }
 
-            // Initialize the modal before showing it
+            // Inicializa el modal antes de mostrarlo
             var editModal = new bootstrap.Modal(document.getElementById('editModal'));
             editModal.show();
         }
@@ -550,49 +617,86 @@
             }
         }
 
-
-        // Nueva función para guardar los cambios editados
         function saveEdit() {
+            // Obtén los valores de los campos del modal
             var newName = document.getElementById("editName").value;
             var newArtist = document.getElementById("editArtist").value;
             var newAlbum = document.getElementById("editAlbum").value;
             var newGenre = document.getElementById("editGenre").value;
             var newReleaseDate = document.getElementById("editReleaseDate").value;
 
-            // Validate that required fields are not empty
+            // Valida que los campos requeridos no estén vacíos
             if (!newName || !newArtist || !newAlbum || !newGenre || !newReleaseDate) {
                 alert("Por favor, complete todos los campos.");
                 return;
             }
 
-            // Update the row in the table directly
-            var editedRow = resultsTable.rows[editIndex + 1]; // Add 1 to skip the header row
-            editedRow.cells[1].textContent = newName;
-            editedRow.cells[2].textContent = newArtist;
-            editedRow.cells[3].textContent = newAlbum;
-            editedRow.cells[4].textContent = newGenre;
-            editedRow.cells[5].textContent = newReleaseDate;
-
-            // Update the corresponding data in the selected songs list, if present
-            if (selectedSongs.length > 0) {
-                var editedSong = selectedSongs.find(song =>
-                    song.track_name === result.track_name && song.track_artist === result.track_artist
-                );
-
-                if (editedSong) {
-                    editedSong.track_name = newName;
-                    editedSong.track_artist = newArtist;
-                    editedSong.track_album_name = newAlbum;
-                    editedSong.playlist_genre = newGenre;
-                    editedSong.track_album_release_date = newReleaseDate;
-                }
-            }
-
-          // Actualizar la variable resultsTable
-            resultsTable = document.querySelector("#results table");
-            
+            // Oculta el modal
             var editModal = new bootstrap.Modal(document.getElementById('editModal'));
             editModal.hide();
+
+            // Muestra un mensaje de éxito
+            alert("¡Cambios guardados con éxito!");
+
+            // Verifica si la canción ya está en la tabla de resultados
+            var resultsTable = document.querySelector("#results table");
+            var songAlreadyInResults = Array.from(resultsTable.rows).some(row => {
+                var songName = row.cells[1].textContent;
+                var artistName = row.cells[2].textContent;
+                return newName === songName && newArtist === artistName;
+            });
+
+            // Si la canción no está en la tabla, agrégala como nueva fila
+            if (!songAlreadyInResults) {
+                // Añadir la fila a la tabla de resultados
+                var newRowResults = resultsTable.insertRow(-1);
+                var newCellsResults = [];
+                for (var i = 0; i < 7; i++) {
+                    newCellsResults.push(newRowResults.insertCell(i));
+                }
+
+                // Añadir los valores a las celdas de la nueva fila
+                newCellsResults[0].textContent = "";
+                newCellsResults[1].textContent = newName;
+                newCellsResults[2].textContent = newArtist;
+                newCellsResults[3].textContent = newAlbum;
+                newCellsResults[4].textContent = newGenre;
+                newCellsResults[5].textContent = newReleaseDate;
+
+                // Obtén el ID de la canción desde los resultados y guárdalo en el servidor
+                var trackId = resultsTable.rows.length - 1; // Supongamos que el ID es el índice de la fila
+                saveChangesToServer(trackId, newName, newArtist, newAlbum, newGenre, newReleaseDate);
+
+                // Actualizar la fila en la tabla de resultados
+                var editedRowResults = resultsTable.rows[resultsTable.rows.length - 1];
+                updateTableRow(editedRowResults, newName, newArtist, newAlbum, newGenre, newReleaseDate);
+
+                // Actualizar los botones de la nueva canción en la tabla de resultados
+                var newSong = {
+                    track_name: newName,
+                    track_artist: newArtist
+                };
+                updateResultsButtonState(newSong, false);
+            }
+
+            // Actualiza la fila en la tabla de canciones seleccionadas, si está presente
+            if (selectedSongs.length > 0) {
+                var editedRowSelected = document.querySelector("#selectedResults table").rows[1];
+                updateTableRow(editedRowSelected, newName, newArtist, newAlbum, newGenre, newReleaseDate);
+            }
+
+            // Actualiza los datos correspondientes en la lista de canciones seleccionadas
+            var editedSong = selectedSongs[editIndex];
+            if (editedSong) {
+                editedSong.track_name = newName;
+                editedSong.track_artist = newArtist;
+                editedSong.track_album_name = newAlbum;
+                editedSong.playlist_genre = newGenre;
+                editedSong.track_album_release_date = newReleaseDate;
+
+                // Guarda los cambios en el servidor
+                saveChangesToServer(editedSong.track_id, newName, newArtist, newAlbum, newGenre, newReleaseDate);
+            }
         }
 
         function deleteSong(song) {
@@ -612,6 +716,9 @@
 
                     // Remove the song from the selected songs list
                     removeFromSelected(song, index - 1);
+
+                    // Remove the song from the server
+                    deleteSongFromServer(song.track_id);
                 }
             });
         }
