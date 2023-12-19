@@ -51,7 +51,7 @@ class SongRepository:
         mapFilter = []
         for item in itemArray:
             if itemArray[item] is not None:
-                mapFilter.append(f"{item} ILIKE '{itemArray[item]}%'")
+                mapFilter.append(f"{item} ILIKE '%{itemArray[item]}%'")
 
         condition = ' AND '.join(mapFilter)
         return condition

@@ -104,6 +104,9 @@
 
 
     <script>
+        // Variable Global
+        var currentAudio = null; 
+
         function searchSpotify() {
             var id = document.getElementById("searchInput").value;
             var url = "http://localhost:5000/v1/spotify/?track_name=" + id;
@@ -138,8 +141,34 @@
             .catch(error => console.error('Error:', error));
         }
 
+        async function playSongs(track,artist) {
+
+            var baseUrl = "http://127.0.0.1:5000/v1/spotify_api/search";
+            
+            var requestBody = {
+                "track": track,
+                "artist": artist
+            };
+            var url = new URL(baseUrl);
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json(); // Obtener el contenido JSON
+                return data; // Devolver los datos JSON
+            } catch (error) {
+                console.error('Error:', error);
+                throw error;
+            }
+        }
+
         function filterColumns(dataComplete) {
-            console.log("🚀 ~ file: index.html:39 ~ filterColumns ~ dataComplete", dataComplete)
+            // console.log("🚀 ~ file: index.html:39 ~ filterColumns ~ dataComplete", dataComplete)
             data = dataComplete.song;
             var filteredData = [];
             for (var i = 0; i < data.length; i++) {
@@ -149,14 +178,14 @@
                 row["track_artist"] = data[i]["track_artist"];
                 row["track_album_name"] = data[i]["track_album_name"];
                 row["playlist_genre"] = data[i]["playlist_genre"];
-                row["track_album_release_date"] = data[i]["track_album_release_date"];
+                //row["track_album_release_date"] = data[i]["track_album_release_date"];
                 filteredData.push(row);
             }
             return filteredData;
         }
 
         function displayResults(data) {
-            console.log("🚀 ~ file: index.html:39 ~ displayResults ~ data", data)
+            // console.log("🚀 ~ file: index.html:39 ~ displayResults ~ data", data)
             var resultsDiv = document.getElementById("results");
             var selectedDiv = document.getElementById("selectedResults");
             var recommendationsDiv = document.getElementById("recommendations");
@@ -172,7 +201,7 @@
 
             // Crear encabezados de tabla con 6 columnas específicas
             var headerRow = table.insertRow(0);
-            var columnHeaders = ["", "Name", "Artista", "Álbum", "Género", "Fecha"];
+            var columnHeaders = ["", "Canción", "Artista", "Álbum", "Género","",""];
             for (var i = 0; i < columnHeaders.length; i++) {
                 var headerCell = headerRow.insertCell(-1);
                 headerCell.textContent = columnHeaders[i];
@@ -188,12 +217,15 @@
                 var selectCell = row.insertCell(0);
                 let selectButton = document.createElement("button");
                 let deselectButton = document.createElement("button");
+                let playButton = document.createElement("button");
 
                 // Estilo de los botones
                 selectButton.classList.add("btn", "btn-success", "btn-song-action");
                 selectButton.textContent = "+";
                 deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
                 deselectButton.textContent = "-";
+                playButton.classList.add("btn","btn-default", "btn-song-action");
+                playButton.textContent = "►";
                 // Ocultar boto de deseleccion si la lista está vacia o no contiene la canción
                 if(isSongSelected(data[i]))
                 {
@@ -232,6 +264,22 @@
                     var cell = row.insertCell(-1);
                     cell.textContent = data[i][Object.keys(data[i])[j]];
                 }
+
+                // Crear una nueva celda para el botón playButton
+                var playCell = row.insertCell(-1);
+                playCell.appendChild(playButton);
+                
+                 // Agregar un evento de clic al botón playButton para reproducir la canción
+                playButton.onclick = (function (track, artist, rowIndex) {
+                    return function () {
+                        playSongs(track, artist)
+                            .then(response => {
+                                const previewUrl = response['preview_url'];
+                                playSongPreview(previewUrl);
+                            })
+                            .catch(error => console.error('Error:', error));
+                    };
+                })(data[i]['track_name'], data[i]['track_artist'], i);
             } 
 
             // Agregar la tabla al div de resultados
@@ -249,6 +297,24 @@
             selectedSongs.push(selectedData);
             // Update table
             updateSelectedTable();
+        }
+
+        function playSongPreview(previewUrl) {
+
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0; // Reiniciar la reproducción al principio
+            }
+
+            // Crear un nuevo elemento de audio
+            var audio = new Audio(previewUrl);
+
+            // Reproducir la pista
+            audio.play();
+
+            // Actualizar el elemento de audio actual
+            currentAudio = audio;
+            // return currentAudio;
         }
 
         function removeFromSelected(song, index) {
@@ -275,7 +341,7 @@
 
             // Add table header
             var headerRow = selectedTable.insertRow(-1);
-            ["", "Name", "Artista"].forEach(headerText => {
+            ["", "Canción", "Artista","Género",""].forEach(headerText => {
                 var headerCell = headerRow.insertCell(-1);
                 headerCell.textContent = headerText;
             });
@@ -302,6 +368,9 @@
             var deselectButton = document.createElement("button");
             deselectButton.classList.add("btn", "btn-danger", "btn-song-action");
             deselectButton.textContent = "-";
+            var playButton = document.createElement("button");
+            playButton.classList.add("btn","btn-default", "btn-song-action");
+            playButton.textContent = "►";
             deselectButton.onclick = () => removeFromSelected(song, index);
             deselectCell.appendChild(deselectButton);
 
@@ -310,6 +379,25 @@
             nameCell.textContent = song.track_name;
             var artistCell = row.insertCell(-1);
             artistCell.textContent = song.track_artist;
+            var genreCell = row.insertCell(-1);
+            genreCell.textContent = song.playlist_genre;
+            // Crear una nueva celda para el botón playButton
+            var playCell = row.insertCell(-1);
+            playCell.appendChild(playButton);
+
+            // Agregar un evento de clic al botón playButton para reproducir la canción
+            playButton.onclick = (function (track, artist) {
+                return function () {
+
+                    playSongs(song.track_name, song.track_artist)
+                            .then(response => {
+                                const previewUrl = response['preview_url'];
+                                playSongPreview(previewUrl);
+                            })
+                            .catch(error => console.error('Error:', error));
+                };
+            })(song.track_name, song.track_artist);
+
         }
 
         function updateResultsButtonState(song, isSelected) {
@@ -359,7 +447,7 @@
             recomendationsTable.classList.add("table", "rounded-table", "table-striped");
             // Agregar encabezados
             var headerRow = recomendationsTable.insertRow(-1);
-            ["Name", "Artista", "Album"].forEach(headerText => {
+            ["Canción", "Artista", "Album","Género",""].forEach(headerText => {
                 var headerCell = headerRow.insertCell(-1);
                 headerCell.textContent = headerText;
             });
@@ -376,6 +464,9 @@
 
         // Crear la row para cada canción
         function addRowToRecomendationsTable(row, song) {
+            var playButton = document.createElement("button");
+            playButton.classList.add("btn","btn-default", "btn-song-action");
+            playButton.textContent = "►";
             // Song name and artist
             var nameCell = row.insertCell(-1);
             nameCell.textContent = song.track_name;
@@ -383,6 +474,24 @@
             artistCell.textContent = song.track_artist;
             var albumCell = row.insertCell(-1);
             albumCell.textContent = song.track_album_name;
+            var genreCell = row.insertCell(-1);
+            genreCell.textContent = song.playlist_genre;
+            var playCell = row.insertCell(-1);
+            playCell.appendChild(playButton);
+
+            // Agregar un evento de clic al botón playButton para reproducir la canción
+            playButton.onclick = (function (track, artist) {
+                return function () {
+
+                    playSongs(song.track_name, song.track_artist)
+                            .then(response => {
+                                const previewUrl = response['preview_url'];
+                                playSongPreview(previewUrl);
+                            })
+                            .catch(error => console.error('Error:', error));
+                };
+            })(song.track_name, song.track_artist);
+            
         }
     </script>
 </body>

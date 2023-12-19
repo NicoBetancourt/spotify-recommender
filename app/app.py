@@ -8,6 +8,7 @@ from use_cases.song import load_songs
 from routes.song_routes import song_routes
 from routes.admin_routes import admin_routes
 from routes.model_routes import model_routes
+from routes.spotify_routes import spotify_routes
 
 app = Flask(__name__)
 
@@ -27,6 +28,7 @@ if __name__ == '__main__':
 
     # Blueprints
     app.register_blueprint(song_routes, url_prefix='/v1/spotify')
+    app.register_blueprint(spotify_routes, url_prefix='/v1/spotify_api')
     app.register_blueprint(admin_routes, url_prefix='/v1/admin')
     app.register_blueprint(model_routes, url_prefix='/v1/model')
 
