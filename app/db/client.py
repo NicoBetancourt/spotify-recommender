@@ -3,6 +3,7 @@ from psycopg2 import DatabaseError
 from decouple import config
 
 table_name = config('TABLE_NAME')
+table_token_name = config('TABLE_TOKEN_NAME')
 
 def get_connection():
     try:
@@ -69,6 +70,24 @@ def create_new_table():
                     tempo FLOAT,
                     duration_ms INTEGER
                 )
+                """
+
+    connection = get_connection()
+    cur = connection.cursor()
+    cur.execute(create_table)
+    connection.commit()
+
+def create_token_table():
+
+    create_table = f"""
+                CREATE TABLE IF NOT EXISTS {table_token_name} (
+                    token_key VARCHAR(255) DEFAULT 'XXXX',
+                    expires_in TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
+                INSERT INTO {table_token_name} (token_key, expires_in)
+                SELECT 'XXX' AS token_key, CURRENT_TIMESTAMP AS expires_in
+                WHERE NOT EXISTS (SELECT 1 FROM {table_token_name} LIMIT 1);
                 """
 
     connection = get_connection()

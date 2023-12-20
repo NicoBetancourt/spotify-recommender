@@ -1,7 +1,7 @@
 from flask_cors import CORS
 from flask import Flask
 from config import config
-from db.client import initialize_database, create_new_table, check_empty_table
+from db.client import create_token_table, initialize_database, create_new_table, check_empty_table
 from use_cases.song import load_songs
 
 # Routes
@@ -25,6 +25,7 @@ if __name__ == '__main__':
     # Inicializar database
     initialize_database()
     create_new_table()
+    create_token_table()
 
     # Blueprints
     app.register_blueprint(song_routes, url_prefix='/v1/spotify')

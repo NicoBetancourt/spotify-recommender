@@ -80,3 +80,18 @@ class psql_driver():
             return result
         except psycopg2.Error as e:
             raise Exception(e)
+        
+    @classmethod
+    def get_token(self, table_name):
+        try:
+            connection = get_connection()
+
+            with connection.cursor() as cursor:
+                cursor.execute(f"SELECT * from {table_name}")
+                infoData = cursor.fetchone()
+
+            connection.close()
+
+            return infoData
+        except Exception as ex:
+            raise Exception(ex)
