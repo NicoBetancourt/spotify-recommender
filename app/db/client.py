@@ -13,7 +13,7 @@ def get_connection():
             user=config('PGSQL_USER'),
             password=config('PGSQL_PASSWORD'),
             database=config('PGSQL_DATABASE'),
-            port=config('PGSQL_PORT')
+            # port=config('PGSQL_PORT')
         )
     except DatabaseError as ex:
         raise ex
@@ -25,7 +25,7 @@ def initialize_database():
             user=config('PGSQL_USER'),
             password=config('PGSQL_PASSWORD'),
             dbname='postgres',
-            port=config('PGSQL_PORT')
+            # port=config('PGSQL_PORT')
         )
 
         connection.autocommit = True

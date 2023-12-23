@@ -10,6 +10,8 @@ from routes.admin_routes import admin_routes
 from routes.model_routes import model_routes
 from routes.spotify_routes import spotify_routes
 
+HTTP_PORT = 5000
+
 app = Flask(__name__)
 
 # Es necesario para poder dejar acceder desde otros puertos
@@ -37,4 +39,4 @@ if __name__ == '__main__':
         load_songs()
     # Error handlers
     app.register_error_handler(404, page_not_found)
-    app.run()
+    app.run(host='0.0.0.0', port=HTTP_PORT, debug=True)
