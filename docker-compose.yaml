@@ -1,0 +1,31 @@
+version: '3.3'
+
+services: 
+  app:
+    container_name: spotify-recommender
+    image: spotify-recommender
+    build: .
+    environment:
+      - SECRET_KEY=admin123
+      - PGSQL_HOST=postgresdb
+      # - PGSQL_PORT=5432
+      - PGSQL_USER=nico
+      - PGSQL_PASSWORD=admin123
+      - PGSQL_DATABASE=spotify-db
+      - TABLE_NAME=songs
+      - TABLE_TOKEN_NAME=token
+      - SPOTIFY_BASIC_AUTHENTICATION="NDRlYjViMjk5NzMxNDYxM2JkMDlkYmM1MmI1ODViZDY6NmZlMjFkZjZlNTA4NDZhZmE1Y2UxODBlYjhiZTVmYjc="
+    ports: 
+      - '5000:5000'
+    depends_on:
+      - postgresdb
+
+  postgresdb:
+    container_name: postgresql-db
+    image: postgres:14.4-alpine
+    environment:
+      - POSTGRES_DB=spotify-db
+      - POSTGRES_USER=nico
+      - POSTGRES_PASSWORD=admin123
+    volumes: 
+      - ./db:/var/lib/postgresql/data
