@@ -234,7 +234,7 @@
     <script>
         // Variable Global
         var currentAudio = null; 
-
+        const soundDefault = "https://cdn.freesound.org/previews/445/445960_9159316-lq.mp3"
         var resultsTable;
 
         function searchSpotify() {
@@ -476,8 +476,9 @@
                     return function () {
                         playSongs(track, artist)
                             .then(response => {
+                                const previewUrl = response['preview_url'] || soundDefault;
+                                console.log("🚀 ~ file: index.html:480 ~ previewUrl:", previewUrl)
                                 playSongPreview(previewUrl);
-                                const previewUrl = response['preview_url'];
                             })
                             .catch(error => console.error('Error:', error));
                     };
@@ -597,7 +598,7 @@
                 return function () {
                     playSongs(song.track_name, song.track_artist)
                             .then(response => {
-                                const previewUrl = response['preview_url'];
+                                const previewUrl = response['preview_url'] || soundDefault;
                                 playSongPreview(previewUrl);
                             })
                             .catch(error => console.error('Error:', error));
@@ -691,7 +692,7 @@
 
                     playSongs(song.track_name, song.track_artist)
                             .then(response => {
-                                const previewUrl = response['preview_url'];
+                                const previewUrl = response['preview_url'] || soundDefault;
                                 playSongPreview(previewUrl);
                             })
                             .catch(error => console.error('Error:', error));

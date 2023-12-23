@@ -26,7 +26,7 @@ class PlaySong:
         info_song = result['tracks']['items'][0]['preview_url']
 
         if info_song is None:
-            info_song = "Not found"
+            info_song = ""
         
         preview_url = {
             "preview_url": info_song
